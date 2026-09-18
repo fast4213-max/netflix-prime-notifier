@@ -58,8 +58,10 @@ JustWatchの「新着」インデックスは実際の配信開始より**1〜3�
 **→ 「日付」ベースの新着判定（例:「昨日released_atのものだけ通知」）は不採用。**
 以下の方式で対応する：
 
-1. 毎回の実行で **直近Nデー分（例: 過去4日）の新着候補** をJustWatchから取得する
-   （日付ではなく「候補の重複取得を許容する」設計）
+1. 毎回の実行で **JustWatchの `newTitles` クエリから直近の新着候補を最大N件** 取得する
+   （実装時の実機検証で、このクエリが「作品の公開日」ではなく「プラットフォームへの
+   追加が新しい順」でタイトルを返すことを確認済み。日付での絞り込みではなく件数(N)
+   ベースの取得とし、「候補の重複取得を許容する」設計にする）
 2. `state/{provider}_seen.json` に **今まで検知済みのコンテンツID（JustWatchのID）** を
    `{id: 初回検知日時}` の形で保持
 3. 取得した候補のうち、`seen_ids` に **未登場のID** だけを「真の新着」として扱う
@@ -81,7 +83,7 @@ JustWatchの「新着」インデックスは実際の配信開始より**1〜3�
 
 ## 3. Prime Videoの「追加課金なしで見られるものだけ」フィルタ設計
 
-JustWatchはAmazon Prime Videoを1つのプロバイダ（技術名 `prv` 想定、実装時に実APIレスポンスで要確定）
+JustWatchはAmazon Prime Videoを1つのプロバイダ（**実機確認済みの短縮名: `amp`**）
 として扱い、同じタイトルに対して以下のオファー種別が混在する：
 
 - `monetization_type = "flatrate"` … Prime会員特典で追加料金なしで視聴可能 ← **通知対象**
@@ -91,33 +93,43 @@ JustWatchはAmazon Prime Videoを1つのプロバイダ（技術名 `prv` 想定
 フィルタロジック（「追加料金が発生しない」タイプだけ通す）：
 
 ```
-NO_EXTRA_COST_TYPES = {"flatrate", "free", "ads"}
+NO_EXTRA_COST_TYPES = {"FLATRATE", "FREE", "ADS"}
 
 for title in prime_video_new_titles:
     offers = title.offers
     watchable_without_extra_cost = any(
-        o.package_short_name == "prv" and o.monetization_type in NO_EXTRA_COST_TYPES
+        o.package_short_name == "amp" and o.monetization_type in NO_EXTRA_COST_TYPES
         for o in offers
     )
     if watchable_without_extra_cost:
         notify(title)
 ```
 
-※ Prime Videoチャンネル経由の追加課金サービス（U-NEXTアドオン等）はJustWatch上では
-別プロバイダIDとして扱われるため、`providers=["prv"]` で絞り込んだ時点で自動的に対象外。
+※ レンタル/購入のみの「Amazon Video」は実機確認でも別プロバイダ（短縮名 `amz`）として
+独立していることを確認済み。Prime Videoチャンネル経由の追加課金サービス（アニメタイムズ等の
+Amazon Channel）もそれぞれ別プロバイダIDになるため、`packages=["amp"]` で絞り込んだ時点で
+自動的に対象外になる（`justwatch_client.py` の `fetch_new_titles` で実装、`main.py` で
+`allowed_monetization_types` に基づきフィルタ）。
 
 ---
 
 ## 4. データ取得方式
 
-- ライブラリ: `simple-justwatch-python-api`（PyPI, GraphQL経由でJustWatchを叩く非公式ラッパー）
-  を利用し、生GraphQLクエリの自前メンテコストを下げる
-- 取得内容: タイトル名、ポスター画像URL、JustWatch content ID、offers一覧（monetization_type,
-  package_short_name）
+- JustWatchの非公開GraphQLエンドポイント（`https://apis.justwatch.com/graphql`）の
+  `newTitles` フィールドを直接叩く自前クエリを `justwatch_client.py` に実装
+  （`simple-justwatch-python-api` ライブラリには `newTitles` 相当の機能が無かったため、
+  実機で存在確認・スキーマ検証した上で自前実装した。検証手順・生レスポンスは
+  `scripts/debug_justwatch.py` に残してある）
+- 取得内容: タイトル名、ポスター画像URL、JustWatch content ID（例: `tm1464109`）、
+  offers一覧（monetization_type, package.short_name）
+- HTTPクライアントは `httpx` を使用。`requests` のデフォルトUser-Agent
+  （`python-requests/...`）だとJustWatch側のWAFに403で弾かれることを実機で確認済み
+  （`httpx` のデフォルトUAでは通る）
 - **リスク**: JustWatch非公式APIのため無告知でスキーマ変更される可能性がある
-  → `justwatch_client.py` に取得処理を隔離し、破損時は例外を捕捉してエラーチャンネルに
-  「JustWatch API取得失敗」を通知（サイレント停止させない）
-  → ライブラリのバージョンは `requirements.txt` でピン留めし、計画的にのみ更新
+  → `justwatch_client.py` に取得処理を隔離し、破損時は例外(`JustWatchError`)を捕捉して
+  エラーチャンネルに通知（サイレント停止させない）
+  → スキーマ変更が疑われる場合は `scripts/debug_justwatch.py` を
+  `workflow_dispatch` で手動実行し、生レスポンスを見て切り分ける
 
 ---
 
@@ -125,21 +137,25 @@ for title in prime_video_new_titles:
 
 ```
 netflix-prime-notifier/
-├── .github/workflows/dispatch.yml   # repository_dispatchのみ、scheduleなし
-├── config.json                       # 国/言語、プロバイダID、通知件数上限など
+├── .github/workflows/
+│   ├── dispatch.yml                  # repository_dispatchのみ、scheduleなし（本番）
+│   └── debug.yml                     # workflow_dispatchのみ（JustWatch API調査用）
+├── config.json                       # 国/言語、プロバイダ短縮名、通知件数上限など
 ├── main.py                           # 通常実行（取得→フィルタ→diff→通知→state更新）
-├── justwatch_client.py               # JustWatch取得ラッパー（新着取得、offerフィルタ）
-├── notifier.py                       # Discord Webhook送信共通処理（embed生成、レート制御、エラー通知）
+├── justwatch_client.py               # newTitlesクエリの自前実装（新着取得、offer情報）
+├── notifier.py                       # Discord Webhook送信共通処理（embed生成、429検知、エラー通知）
 ├── state_manager.py                  # state(JSON)の読み書き・prune
 ├── init_read.py                      # 初回セットアップ用：既読化のみ、通知なし
 ├── test_notify.py                    # テスト用：各チャンネルに1件だけ試験通知
+├── scripts/
+│   └── debug_justwatch.py            # JustWatch生レスポンス確認用（debug.ymlから実行）
 ├── state/
 │   ├── netflix_seen.json             # Netflix既通知IDセット
-│   ├── prime_seen.json               # Prime Video既通知IDセット
+│   ├── prime_video_seen.json         # Prime Video既通知IDセット
 │   ├── netflix_queue.json            # 未送信の新着FIFOキュー（破棄しない）
-│   └── prime_queue.json
+│   └── prime_video_queue.json
 ├── requirements.txt
-├── README.md                          # セットアップ手順（下記5章参照）
+├── README.md                          # セットアップ手順
 └── docs/
     └── DESIGN.md                      # 本ドキュメント
 ```
@@ -266,15 +282,26 @@ Secrets未設定時は実行時に明確なエラーメッセージで停止さ�
 
 ---
 
-## 12. 未確定・実装時に確定させる項目
+## 12. 実装状況
 
-- JustWatchレスポンスにおけるAmazon Prime Videoの実際の `package_short_name`
-  （`prv`と想定しているが実APIレスポンスで確認要）
-- 「新着」取得の遡り日数N：**まず4日で運用開始**し、実データで「もれ」が
-  無いか確認する。もし4日では拾いきれない新着が見つかった場合は
-  `config.json` の値を伸ばすだけで対応できる設計にしておく（ユーザー確認済み方針）
+設計・実装ともに完了。`claude/wizardly-tesla-4dm4k5` ブランチにpush済み。
+
+- 実装したファイル一式は5章のファイル構成の通り
+- Netflix短縮名 `nfx` / Prime Video短縮名 `amp` は実機確認済み
+- `newTitles` クエリの存在・動作、`amp` プロバイダにflatrate/free/ads/rent/buyが
+  混在すること、rent/buy専業の「Amazon Video」が別プロバイダ`amz`であることは
+  すべてGitHub Actions上での実データ確認で検証済み
+- `justwatch_client.fetch_new_titles()` を使ったdiff/queue/429ハンドリングの
+  ロジックはモックによるローカルテストで検証済み（重複検知なし、上限超過分の
+  キュー持ち越し、429時の安全な打ち切りをすべて確認）
+
+### ユーザー側でこれから行う作業（README.md参照）
+
+- `DISCORD_WEBHOOK_NETFLIX` / `DISCORD_WEBHOOK_PRIME` をGitHub Secretsに登録
+- cron-job.org側でGitHub PATを使ったジョブ設定（`init-read`→`test-notify`→`run-notify`の順）
+- 新着取得件数（`new_titles_fetch_count`、初期値50）で「もれ」が出ないかは
+  運用しながら確認し、必要なら`config.json`の値を調整する
 
 ---
 
-以上が設計。この内容で問題なければ、次のステップとして実装（各ファイルの作成、
-JustWatchレスポンスの実データ確認、Discord embed実装）に進む。
+実装完了。残るのはユーザー側のSecrets登録とcron-job.org設定のみ（README.md参照）。
