@@ -210,6 +210,24 @@ def probe_production_client() -> None:
                 print(f"      {o.package_short_name} / {o.monetization_type}")
 
 
+def probe_large_fetch_count() -> None:
+    section("newTitles(first: 100 / 200) が複雑度エラーなどで落ちないか確認")
+    from justwatch_client import fetch_new_titles
+
+    for count in (100, 200):
+        try:
+            titles = fetch_new_titles(
+                provider_short_name="nfx",
+                count=count,
+                country=COUNTRY,
+                language=LANGUAGE,
+                object_types=["MOVIE", "SHOW"],
+            )
+            print(f"count={count}: 成功、{len(titles)}件取得")
+        except Exception as ex:  # noqa: BLE001
+            print(f"count={count}: 失敗 -> {ex}")
+
+
 if __name__ == "__main__":
     probe_providers()
     probe_popular_baseline("nfx")
@@ -219,3 +237,4 @@ if __name__ == "__main__":
     probe_new_titles_bogus_argument()
     probe_sort_by_enum_values()
     probe_production_client()
+    probe_large_fetch_count()
