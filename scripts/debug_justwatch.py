@@ -77,10 +77,84 @@ def probe_new_titles_field(short_name: str) -> None:
     print(json.dumps(result, ensure_ascii=False, indent=2)[:3000])
 
 
-def probe_sort_by_release_year(short_name: str) -> None:
-    section("popularTitles(sortBy: RELEASE_YEAR, sortOrder: DESC) の動作確認")
+def probe_new_titles_with_filter(short_name: str) -> None:
+    section(f"newTitles(filter: TitleFilter{{packages: [{short_name!r}]}}) の動作確認")
     query = """
-    query ProbeSortedPopular(
+    query ProbeNewTitlesFiltered(
+        $country: Country!,
+        $first: Int!,
+        $filter: TitleFilter,
+        $language: Language!,
+        $formatPoster: ImageFormat,
+        $profile: PosterProfile
+    ) {
+        newTitles(country: $country, first: $first, filter: $filter) {
+            edges {
+                node {
+                    id
+                    objectId
+                    objectType
+                    content(country: $country, language: $language) {
+                        title
+                        fullPath
+                        originalReleaseDate
+                        posterUrl(profile: $profile, format: $formatPoster)
+                    }
+                    offers(country: $country, platform: WEB) {
+                        monetizationType
+                        package {
+                            shortName
+                        }
+                    }
+                }
+            }
+        }
+    }
+    """
+    variables = {
+        "country": COUNTRY,
+        "first": 10,
+        "language": LANGUAGE,
+        "formatPoster": "JPG",
+        "profile": "S718",
+        "filter": {"packages": [short_name], "objectTypes": ["MOVIE", "SHOW"]},
+    }
+    result = raw_graphql("ProbeNewTitlesFiltered", query, variables)
+    print(json.dumps(result, ensure_ascii=False, indent=2)[:5000])
+
+
+def probe_new_titles_bogus_argument() -> None:
+    section("newTitles に存在しない引数を渡してエラーメッセージから仕様を推測")
+    query = """
+    query ProbeNewTitlesArgs($country: Country!) {
+        newTitles(country: $country, bogusArgument: 1) {
+            edges { node { objectId } }
+        }
+    }
+    """
+    result = raw_graphql("ProbeNewTitlesArgs", query, {"country": COUNTRY})
+    print(json.dumps(result, ensure_ascii=False, indent=2)[:2000])
+
+
+def probe_sort_by_enum_values() -> None:
+    section("popularTitles の sortBy に不正な値を渡して列挙値のヒントを得る")
+    query = """
+    query ProbeSortByEnum($country: Country!, $first: Int!) {
+        popularTitles(country: $country, first: $first, sortBy: BOGUS_SORT_VALUE) {
+            edges { node { objectId } }
+        }
+    }
+    """
+    result = raw_graphql(
+        "ProbeSortByEnum", query, {"country": COUNTRY, "first": 3}
+    )
+    print(json.dumps(result, ensure_ascii=False, indent=2)[:2000])
+
+
+def probe_sort_by_release_year_order(short_name: str) -> None:
+    section("popularTitles(sortBy: RELEASE_YEAR) の並び順（昇順/降順）を確認")
+    query = """
+    query ProbeReleaseYearOrder(
         $country: Country!,
         $first: Int!,
         $filter: TitleFilter,
@@ -91,16 +165,12 @@ def probe_sort_by_release_year(short_name: str) -> None:
             filter: $filter
             first: $first
             sortBy: RELEASE_YEAR
-            sortOrder: DESC
         ) {
             edges {
                 node {
-                    objectId
-                    objectType
                     content(country: $country, language: $language) {
                         title
                         originalReleaseDate
-                        fullPath
                     }
                 }
             }
@@ -113,7 +183,7 @@ def probe_sort_by_release_year(short_name: str) -> None:
         "language": LANGUAGE,
         "filter": {"packages": [short_name], "objectTypes": ["MOVIE", "SHOW"]},
     }
-    result = raw_graphql("ProbeSortedPopular", query, variables)
+    result = raw_graphql("ProbeReleaseYearOrder", query, variables)
     print(json.dumps(result, ensure_ascii=False, indent=2)[:4000])
 
 
@@ -121,4 +191,8 @@ if __name__ == "__main__":
     probe_providers()
     probe_popular_baseline("nfx")
     probe_new_titles_field("nfx")
-    probe_sort_by_release_year("nfx")
+    probe_new_titles_with_filter("nfx")
+    probe_new_titles_with_filter("amp")
+    probe_new_titles_bogus_argument()
+    probe_sort_by_enum_values()
+    probe_sort_by_release_year_order("nfx")
