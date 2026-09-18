@@ -3,6 +3,17 @@ name: Notify
 on:
   repository_dispatch:
     types: [run-notify, init-read, test-notify]
+  workflow_dispatch:
+    inputs:
+      event_type:
+        description: "run-notify / init-read / test-notify"
+        required: true
+        default: "test-notify"
+        type: choice
+        options:
+          - run-notify
+          - init-read
+          - test-notify
 
 permissions:
   contents: write
@@ -19,12 +30,14 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      - name: Run script for ${{ github.event.action }}
+      - name: Run script
         env:
           DISCORD_WEBHOOK_NETFLIX: ${{ secrets.DISCORD_WEBHOOK_NETFLIX }}
           DISCORD_WEBHOOK_PRIME: ${{ secrets.DISCORD_WEBHOOK_PRIME }}
+          EVENT_TYPE: ${{ github.event.action || github.event.inputs.event_type }}
         run: |
-          case "${{ github.event.action }}" in
+          echo "event_type: $EVENT_TYPE"
+          case "$EVENT_TYPE" in
             run-notify)
               python main.py
               ;;
@@ -35,7 +48,7 @@ jobs:
               python test_notify.py
               ;;
             *)
-              echo "Unknown event_type: ${{ github.event.action }}"
+              echo "Unknown event_type: $EVENT_TYPE"
               exit 1
               ;;
           esac
