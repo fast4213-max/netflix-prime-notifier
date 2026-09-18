@@ -11,5 +11,5 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install simple-justwatch-python-api httpx
+      - run: pip install simple-justwatch-python-api httpx -r requirements.txt
       - run: python scripts/debug_justwatch.py

@@ -1,0 +1,22 @@
+{
+  "country": "JP",
+  "language": "ja",
+  "object_types": ["MOVIE", "SHOW"],
+  "new_titles_fetch_count": 50,
+  "init_fetch_count": 200,
+  "notify_limit_per_run": 30,
+  "send_interval_seconds": 0.5,
+  "seen_id_retention_days": 90,
+  "providers": {
+    "netflix": {
+      "short_name": "nfx",
+      "webhook_env": "DISCORD_WEBHOOK_NETFLIX",
+      "allowed_monetization_types": ["FLATRATE"]
+    },
+    "prime_video": {
+      "short_name": "amp",
+      "webhook_env": "DISCORD_WEBHOOK_PRIME",
+      "allowed_monetization_types": ["FLATRATE", "FREE", "ADS"]
+    }
+  }
+}

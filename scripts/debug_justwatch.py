@@ -6,9 +6,13 @@ Discordには一切送信せず、標準出力にのみ結果を出す。
 """
 
 import json
+import sys
+from pathlib import Path
 
 import httpx
 from simplejustwatchapi.justwatch import popular, providers
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 COUNTRY = "JP"
 LANGUAGE = "ja"
@@ -187,6 +191,25 @@ def probe_sort_by_release_year_order(short_name: str) -> None:
     print(json.dumps(result, ensure_ascii=False, indent=2)[:4000])
 
 
+def probe_production_client() -> None:
+    section("本番コード justwatch_client.fetch_new_titles() の動作確認")
+    from justwatch_client import fetch_new_titles
+
+    for short_name in ("nfx", "amp"):
+        titles = fetch_new_titles(
+            provider_short_name=short_name,
+            count=5,
+            country=COUNTRY,
+            language=LANGUAGE,
+            object_types=["MOVIE", "SHOW"],
+        )
+        print(f"-- {short_name} --")
+        for t in titles:
+            print(f"  {t.id} {t.title!r} poster={t.poster_url}")
+            for o in t.offers:
+                print(f"      {o.package_short_name} / {o.monetization_type}")
+
+
 if __name__ == "__main__":
     probe_providers()
     probe_popular_baseline("nfx")
@@ -195,4 +218,4 @@ if __name__ == "__main__":
     probe_new_titles_with_filter("amp")
     probe_new_titles_bogus_argument()
     probe_sort_by_enum_values()
-    probe_sort_by_release_year_order("nfx")
+    probe_production_client()
