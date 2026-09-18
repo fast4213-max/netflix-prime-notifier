@@ -293,3 +293,16 @@ if __name__ == "__main__":
     probe_production_client()
     probe_large_fetch_count()
     probe_new_titles_offset()
+
+    section("本番コード fetch_new_titles(count=300) のページング動作確認")
+    from justwatch_client import fetch_new_titles as _fnt
+
+    titles300 = _fnt(
+        provider_short_name="nfx",
+        count=300,
+        country=COUNTRY,
+        language=LANGUAGE,
+        object_types=["MOVIE", "SHOW"],
+    )
+    ids300 = [t.id for t in titles300]
+    print(f"取得件数: {len(titles300)}, ユニークID数: {len(set(ids300))}")
