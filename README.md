@@ -85,8 +85,8 @@ curl -X POST \
 
 | 項目 | 説明 | 初期値 |
 |---|---|---|
-| `new_titles_fetch_count` | 1回の実行でJustWatchから取得する新着候補数 | 50 |
-| `init_fetch_count` | 初回既読化(init-read)で取得する件数 | 200 |
+| `new_titles_fetch_count` | 1回の実行でJustWatchから取得する新着候補数（実機確認済みの上限: 100。150以上は`page too large`エラーで拒否される） | 100 |
+| `init_fetch_count` | 初回既読化(init-read)で取得する件数（同じ理由で上限100） | 100 |
 | `notify_limit_per_run` | 1回の実行あたりのDiscord送信上限 | 30 |
 | `send_interval_seconds` | Discord送信の間隔（秒） | 0.5 |
 | `seen_id_retention_days` | 既読IDを保持する日数 | 90 |

@@ -3,7 +3,7 @@
   "language": "ja",
   "object_types": ["MOVIE", "SHOW"],
   "new_titles_fetch_count": 100,
-  "init_fetch_count": 200,
+  "init_fetch_count": 100,
   "notify_limit_per_run": 30,
   "send_interval_seconds": 0.5,
   "seen_id_retention_days": 90,
