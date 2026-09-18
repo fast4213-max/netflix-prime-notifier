@@ -376,6 +376,31 @@ def probe_new_titles_repeat_stability(short_name: str) -> None:
         print("完全一致:", t1 == t2)
 
 
+def probe_full_catalog_size(short_name: str) -> None:
+    section(f"popularTitles({short_name!r}) の総件数・pageInfoを確認（全件差分方式の実現性調査）")
+    query = """
+    query ProbeCatalogSize($country: Country!, $first: Int!, $filter: TitleFilter) {
+        popularTitles(country: $country, first: $first, filter: $filter) {
+            totalCount
+            pageInfo {
+                hasNextPage
+                endCursor
+            }
+            edges {
+                node { id }
+            }
+        }
+    }
+    """
+    variables = {
+        "country": COUNTRY,
+        "first": 1,
+        "filter": {"packages": [short_name], "objectTypes": ["MOVIE", "SHOW"]},
+    }
+    result = raw_graphql("ProbeCatalogSize", query, variables)
+    print(json.dumps(result, ensure_ascii=False, indent=2)[:2000])
+
+
 if __name__ == "__main__":
     probe_providers()
     probe_popular_baseline("nfx")
@@ -405,3 +430,7 @@ if __name__ == "__main__":
     probe_introspect_type("Offer")
     probe_offer_fields_on_known_title("amp")
     probe_new_titles_repeat_stability("nfx")
+
+    section("全件差分方式の実現性調査: カタログ総件数")
+    probe_full_catalog_size("nfx")
+    probe_full_catalog_size("amp")
