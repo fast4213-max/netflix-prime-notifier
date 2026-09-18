@@ -282,6 +282,100 @@ def probe_new_titles_offset() -> None:
         print(f"重複ID例: {list(overlap)[:5]}")
 
 
+def probe_introspect_type(type_name: str) -> None:
+    section(f"__type({type_name!r}) のフィールド一覧をイントロスペクションで確認")
+    query = """
+    query IntrospectType($name: String!) {
+        __type(name: $name) {
+            name
+            fields {
+                name
+                description
+                args {
+                    name
+                    type { name kind ofType { name kind } }
+                }
+                type { name kind ofType { name kind } }
+            }
+        }
+    }
+    """
+    result = raw_graphql("IntrospectType", query, {"name": type_name})
+    print(json.dumps(result, ensure_ascii=False, indent=2)[:6000])
+
+
+def probe_offer_fields_on_known_title(short_name: str) -> None:
+    section(f"実際の{short_name}タイトルのofferに時刻系フィールドが無いか総当りで確認")
+    query = """
+    query ProbeOfferFields(
+        $country: Country!,
+        $first: Int!,
+        $filter: TitleFilter,
+        $language: Language!
+    ) {
+        newTitles(country: $country, first: $first, filter: $filter) {
+            edges {
+                node {
+                    id
+                    content(country: $country, language: $language) { title }
+                    offers(country: $country, platform: WEB) {
+                        monetizationType
+                        availableToTime
+                        availableFromTime
+                        createdAt
+                        newElementCount
+                        elementCount
+                        package { shortName }
+                    }
+                }
+            }
+        }
+    }
+    """
+    variables = {
+        "country": COUNTRY,
+        "first": 5,
+        "language": LANGUAGE,
+        "filter": {"packages": [short_name], "objectTypes": ["MOVIE", "SHOW"]},
+    }
+    result = raw_graphql("ProbeOfferFields", query, variables)
+    print(json.dumps(result, ensure_ascii=False, indent=2)[:5000])
+
+
+def probe_new_titles_repeat_stability(short_name: str) -> None:
+    section(f"newTitles(first:20)を2回連続で叩いて、同じ実行内でも順序/内容が変わるか確認")
+    query = """
+    query ProbeRepeat($country: Country!, $first: Int!, $filter: TitleFilter, $language: Language!) {
+        newTitles(country: $country, first: $first, filter: $filter) {
+            edges { node { id content(country: $country, language: $language) { title } } }
+        }
+    }
+    """
+    variables = {
+        "country": COUNTRY,
+        "first": 20,
+        "language": LANGUAGE,
+        "filter": {"packages": [short_name], "objectTypes": ["MOVIE", "SHOW"]},
+    }
+    r1 = raw_graphql("ProbeRepeat", query, variables)
+    r2 = raw_graphql("ProbeRepeat", query, variables)
+
+    def titles(result):
+        try:
+            return [
+                (e["node"]["id"], e["node"]["content"]["title"])
+                for e in result["data"]["newTitles"]["edges"]
+            ]
+        except (KeyError, TypeError):
+            return None
+
+    t1, t2 = titles(r1), titles(r2)
+    print("1回目:", t1)
+    print("2回目:", t2)
+    if t1 is not None and t2 is not None:
+        print("完全一致:", t1 == t2)
+
+
 if __name__ == "__main__":
     probe_providers()
     probe_popular_baseline("nfx")
@@ -306,3 +400,8 @@ if __name__ == "__main__":
     )
     ids300 = [t.id for t in titles300]
     print(f"取得件数: {len(titles300)}, ユニークID数: {len(set(ids300))}")
+
+    section("根本原因調査: newTitlesの『新着』基準を特定する")
+    probe_introspect_type("Offer")
+    probe_offer_fields_on_known_title("amp")
+    probe_new_titles_repeat_stability("nfx")
