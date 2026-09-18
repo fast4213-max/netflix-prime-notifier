@@ -18,17 +18,23 @@ import httpx
 _GRAPHQL_URL = "https://apis.justwatch.com/graphql"
 _IMAGES_URL = "https://images.justwatch.com"
 
+# JustWatch側がfirstに150以上を渡すと"page too large"(TOO_BIG)で拒否することを
+# 実機確認済み。100は成功するため、1リクエストあたりの上限として使い、
+# それ以上必要な場合はoffsetでページングする(offsetの重複無し動作も実機確認済み)。
+_MAX_PAGE_SIZE = 100
+
 _NEW_TITLES_QUERY = """
 query GetNewTitles(
     $country: Country!,
     $language: Language!,
     $first: Int!,
+    $offset: Int,
     $filter: TitleFilter,
     $formatPoster: ImageFormat,
     $profile: PosterProfile,
     $offerFilter: OfferFilter!
 ) {
-    newTitles(country: $country, first: $first, filter: $filter) {
+    newTitles(country: $country, first: $first, offset: $offset, filter: $filter) {
         edges {
             node {
                 id
@@ -88,11 +94,37 @@ def fetch_new_titles(
     JustWatch側の「新着」インデックス反映が数日遅れることがあるため、
     ここで多めに取得し、呼び出し側(state_manager)でIDベースの
     重複排除を行う設計にしている。
+
+    countが1ページの上限(_MAX_PAGE_SIZE=100)を超える場合は、
+    offsetを進めながら複数回リクエストして連結する。
     """
+    results: list[NewTitle] = []
+    offset = 0
+    while len(results) < count:
+        page_size = min(_MAX_PAGE_SIZE, count - len(results))
+        page = _fetch_page(
+            provider_short_name, page_size, offset, country, language, object_types
+        )
+        results.extend(page)
+        if len(page) < page_size:
+            break  # これ以上ページが無い
+        offset += page_size
+    return results
+
+
+def _fetch_page(
+    provider_short_name: str,
+    first: int,
+    offset: int,
+    country: str,
+    language: str,
+    object_types: list[str],
+) -> list[NewTitle]:
     variables = {
         "country": country,
         "language": language,
-        "first": count,
+        "first": first,
+        "offset": offset,
         "formatPoster": "JPG",
         "profile": "S718",
         "offerFilter": {"bestOnly": True},
