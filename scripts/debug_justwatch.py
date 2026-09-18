@@ -214,7 +214,7 @@ def probe_large_fetch_count() -> None:
     section("newTitles(first: 100 / 200) が複雑度エラーなどで落ちないか確認")
     from justwatch_client import fetch_new_titles
 
-    for count in (100, 200):
+    for count in (100, 150, 200):
         try:
             titles = fetch_new_titles(
                 provider_short_name="nfx",
