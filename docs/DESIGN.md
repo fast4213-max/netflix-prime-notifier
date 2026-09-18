@@ -11,8 +11,9 @@ JustWatchを情報源としてNetflixとPrime Videoの新着タイトルをDisco
 |---|---|---|
 | 対象国/言語 | 日本 (`country=JP`, `language=ja`) | 日本語での依頼のため。異なる場合は要連絡 |
 | 実行頻度 | 1時間ごと（cron-job.org → repository_dispatch） | ユーザー指定 |
-| 1回の通知上限 | 10件/プロバイダ（超過分はキューへ） | RSS botの知見を踏襲。変更可 |
-| 対象コンテンツ種別 | 映画+シリーズ両方 | 特に指定なければ両方通知 |
+| 1回の通知上限 | 30件/プロバイダ（超過分のみキューへ） | ユーザー確認済み。詳細は6章参照 |
+| 対象コンテンツ種別 | 映画+シリーズ両方 | ユーザー確認済み（全部通知） |
+| Prime Video通知対象 | flatrate（Prime特典）+ free/ads（広告つき無料） | ユーザー確認済み。rent/buyのみ除外 |
 | JustWatchは非公式API | GraphQL (`apis.justwatch.com/graphql`) を利用 | 公式契約なし、スキーマ変更リスクあり（後述） |
 
 ---
@@ -71,25 +72,27 @@ JustWatchの「新着」インデックスは実際の配信開始より**1〜3�
 
 ---
 
-## 3. Prime Videoの「Prime特典のみ」フィルタ設計
+## 3. Prime Videoの「追加課金なしで見られるものだけ」フィルタ設計
 
 JustWatchはAmazon Prime Videoを1つのプロバイダ（技術名 `prv` 想定、実装時に実APIレスポンスで要確定）
 として扱い、同じタイトルに対して以下のオファー種別が混在する：
 
-- `monetization_type = "flatrate"` … Prime会員特典で追加料金なしで視聴可能 ← **これだけ通知したい**
-- `monetization_type = "rent" / "buy"` … 都度課金のレンタル/購入（Prime特典ではない）
-- `monetization_type = "free" / "ads"` … 広告つき無料視聴など（Prime Video内だが特典とは別扱い、要方針確認）
+- `monetization_type = "flatrate"` … Prime会員特典で追加料金なしで視聴可能 ← **通知対象**
+- `monetization_type = "free" / "ads"` … 広告つき無料視聴 ← **通知対象**（ユーザー確認済み）
+- `monetization_type = "rent" / "buy"` … 都度課金のレンタル/購入 ← **除外**（Prime特典ではないため）
 
-フィルタロジック：
+フィルタロジック（「追加料金が発生しない」タイプだけ通す）：
 
 ```
+NO_EXTRA_COST_TYPES = {"flatrate", "free", "ads"}
+
 for title in prime_video_new_titles:
     offers = title.offers
-    has_flatrate = any(
-        o.package_short_name == "prv" and o.monetization_type == "flatrate"
+    watchable_without_extra_cost = any(
+        o.package_short_name == "prv" and o.monetization_type in NO_EXTRA_COST_TYPES
         for o in offers
     )
-    if has_flatrate:
+    if watchable_without_extra_cost:
         notify(title)
 ```
 
@@ -138,27 +141,36 @@ netflix-prime-notifier/
 
 ## 6. Discord通知フォーマット
 
-Embedで以下を送信（タイトル+画像。依頼通り最小構成）：
+タイトルと画像のみのシンプルなembed（リンクなし、フッターなし）：
 
 ```json
 {
   "embeds": [{
     "title": "<作品タイトル>",
-    "url": "<JustWatchの作品ページURL>",
-    "image": {"url": "<ポスター画像URL>"},
-    "footer": {"text": "Netflix 新着"}   // or "Prime Video 新着（会員特典）"
+    "image": {"url": "<ポスター画像URL>"}
   }]
 }
 ```
 
-エラー通知（同チャンネルへ通常メッセージ or 目立つ色のembedで送信）:
+エラー通知（同チャンネルへ通常メッセージで送信）:
 
 ```json
 {"content": "⚠️ [Netflix] JustWatch取得に失敗しました: <エラー概要>\n次回実行時に再試行します。"}
 ```
 
-レート制限対策：1メッセージ送信毎に軽いsleep（例: 0.5〜1秒）、1回の実行での送信上限
-（例: 10件）を超えた分はqueueに保存し次回実行分に繰り越す（RSS botの知見を踏襲）。
+### レート制限まわりの設計
+
+Discord Webhookのレート制限は1webhookあたり概ね「2秒間に5リクエスト」程度。
+1回の実行で30件を送る場合でも、送信間に0.5秒程度のsleepを入れれば合計15秒ほどで
+送り切れるため、時間あたりの実行（1時間毎）に対して十分余裕がある。
+
+- **1回の実行あたりの通知上限：Netflix / Prime Videoともに30件**
+  （Netflixが急に30件规模で新着を出すことがあるとのことなので、
+  「10件区切りで3時間かけて小出しにする」方式ではなく、余裕を持って
+  1回の実行内でまとめて送り切る方針にする）
+- 30件を超える異常発生時のみ、超過分を `queue_*.json` に退避し次回実行分に繰り越す
+  （セーフティネットとして残すが、通常運用では発火しない想定）
+- 送信間隔・上限件数は `config.json` の値としてチューニング可能にする
 
 ---
 
@@ -228,10 +240,9 @@ Secrets未設定時は実行時に明確なエラーメッセージで停止さ�
 
 - JustWatchレスポンスにおけるAmazon Prime Videoの実際の `package_short_name`
   （`prv`と想定しているが実APIレスポンスで確認要）
-- 「新着」取得の遡り日数N（デフォルト4日を想定、実データで調整）
-- 映画/シリーズ両方を通知するか、どちらかに絞るか
-- 1回あたりの通知上限件数（デフォルト10件/プロバイダ）
-- `free`/`ads`（広告付き無料）をPrime Video通知に含めるか否か
+- 「新着」取得の遡り日数N：**まず4日で運用開始**し、実データで「もれ」が
+  無いか確認する。もし4日では拾いきれない新着が見つかった場合は
+  `config.json` の値を伸ばすだけで対応できる設計にしておく（ユーザー確認済み方針）
 
 ---
 
