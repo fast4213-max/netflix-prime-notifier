@@ -228,6 +228,60 @@ def probe_large_fetch_count() -> None:
             print(f"count={count}: 失敗 -> {ex}")
 
 
+def probe_new_titles_offset() -> None:
+    section("newTitles(first: 100, offset: 100) でページングできるか確認")
+    query = """
+    query ProbeNewTitlesOffset(
+        $country: Country!,
+        $first: Int!,
+        $offset: Int,
+        $filter: TitleFilter,
+        $language: Language!
+    ) {
+        newTitles(country: $country, first: $first, offset: $offset, filter: $filter) {
+            edges {
+                node {
+                    id
+                    content(country: $country, language: $language) {
+                        title
+                    }
+                }
+            }
+        }
+    }
+    """
+    variables_page1 = {
+        "country": COUNTRY,
+        "first": 100,
+        "offset": 0,
+        "language": LANGUAGE,
+        "filter": {"packages": ["nfx"], "objectTypes": ["MOVIE", "SHOW"]},
+    }
+    variables_page2 = {**variables_page1, "offset": 100}
+
+    result1 = raw_graphql("ProbeNewTitlesOffset", query, variables_page1)
+    result2 = raw_graphql("ProbeNewTitlesOffset", query, variables_page2)
+
+    def ids(result):
+        try:
+            return [e["node"]["id"] for e in result["data"]["newTitles"]["edges"]]
+        except (KeyError, TypeError):
+            return None
+
+    ids1 = ids(result1)
+    ids2 = ids(result2)
+    if ids1 is None or ids2 is None:
+        print("offset=0 or offset=100 failed:")
+        print(json.dumps(result1, ensure_ascii=False)[:1500])
+        print(json.dumps(result2, ensure_ascii=False)[:1500])
+        return
+
+    overlap = set(ids1) & set(ids2)
+    print(f"offset=0: {len(ids1)}件, offset=100: {len(ids2)}件, 重複: {len(overlap)}件")
+    if overlap:
+        print(f"重複ID例: {list(overlap)[:5]}")
+
+
 if __name__ == "__main__":
     probe_providers()
     probe_popular_baseline("nfx")
@@ -238,3 +292,4 @@ if __name__ == "__main__":
     probe_sort_by_enum_values()
     probe_production_client()
     probe_large_fetch_count()
+    probe_new_titles_offset()
