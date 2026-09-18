@@ -9,7 +9,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import requests
+import httpx
+
+# requestsのデフォルトUser-Agent("python-requests/...")だとJustWatch側のWAFに
+# 403で弾かれることをGitHub Actions上での実機確認で確認済み。httpxのデフォルト
+# UA（ヘッダーを何も指定しない状態）では通ることも実機確認済みなのでhttpxを使う。
 
 _GRAPHQL_URL = "https://apis.justwatch.com/graphql"
 _IMAGES_URL = "https://images.justwatch.com"
@@ -100,10 +104,10 @@ def fetch_new_titles(
     body = {"operationName": "GetNewTitles", "variables": variables, "query": _NEW_TITLES_QUERY}
 
     try:
-        response = requests.post(_GRAPHQL_URL, json=body, timeout=30)
+        response = httpx.post(_GRAPHQL_URL, json=body, timeout=30)
         response.raise_for_status()
         payload = response.json()
-    except requests.RequestException as exc:
+    except httpx.HTTPError as exc:
         raise JustWatchError(f"JustWatchへのリクエストに失敗しました: {exc}") from exc
 
     if "errors" in payload:
