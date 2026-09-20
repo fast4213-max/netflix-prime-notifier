@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
@@ -101,6 +102,15 @@ _CATALOG_PAGE_CAP = 1999
 _CATALOG_PAGE_CAP_WARN_THRESHOLD = 1900  # この件数に達したら分割が粗すぎる可能性
 _CATALOG_OLD_ERA_BUCKETS = [(None, 1979), (1980, 1999)]
 
+# 週次の全件取得は年代分割で約200件超のリクエストを連発するため、無間隔で
+# 叩くとJustWatch側のレート制限(429)にすぐ引っかかる（実機で確認済み）。
+# ページ毎にこの間隔を空ける。
+_REQUEST_INTERVAL_SECONDS = 0.5
+# 429を受けた場合はレスポンスの`Retry-After`（無ければこの秒数）だけ待って
+# リトライする。これを超えて429が続く場合は諦めてエラーにする。
+_REQUEST_RETRY_MAX = 5
+_REQUEST_RETRY_FALLBACK_WAIT_SECONDS = 3.0
+
 
 class JustWatchError(Exception):
     """JustWatch APIの取得に失敗したときに送出する。"""
@@ -158,6 +168,48 @@ def fetch_new_titles(
     return results
 
 
+def _post_graphql(operation_name: str, query: str, variables: dict) -> dict:
+    """GraphQLリクエストを送信する。429の場合は待ってリトライする。"""
+    body = {"operationName": operation_name, "variables": variables, "query": query}
+
+    attempt = 0
+    while True:
+        try:
+            response = httpx.post(_GRAPHQL_URL, json=body, timeout=30)
+        except httpx.HTTPError as exc:
+            raise JustWatchError(f"JustWatchへのリクエストに失敗しました: {exc}") from exc
+
+        if response.status_code == 429:
+            attempt += 1
+            if attempt > _REQUEST_RETRY_MAX:
+                raise JustWatchError(
+                    f"JustWatchのレート制限(429)が{_REQUEST_RETRY_MAX}回連続で解消しません。"
+                )
+            retry_after_header = response.headers.get("Retry-After")
+            try:
+                wait = float(retry_after_header) if retry_after_header else None
+            except ValueError:
+                wait = None
+            if wait is None:
+                wait = _REQUEST_RETRY_FALLBACK_WAIT_SECONDS * attempt
+            print(
+                f"JustWatchのレート制限(429)を受けました。{wait}秒待ってリトライします"
+                f"（{attempt}/{_REQUEST_RETRY_MAX}回目）。"
+            )
+            time.sleep(wait)
+            continue
+
+        try:
+            response.raise_for_status()
+        except httpx.HTTPError as exc:
+            raise JustWatchError(f"JustWatchへのリクエストに失敗しました: {exc}") from exc
+
+        try:
+            return response.json()
+        except ValueError as exc:
+            raise JustWatchError(f"JustWatchのレスポンスがJSONではありません: {exc}") from exc
+
+
 def _fetch_page(
     provider_short_name: str,
     first: int,
@@ -179,14 +231,7 @@ def _fetch_page(
             "objectTypes": object_types,
         },
     }
-    body = {"operationName": "GetNewTitles", "variables": variables, "query": _NEW_TITLES_QUERY}
-
-    try:
-        response = httpx.post(_GRAPHQL_URL, json=body, timeout=30)
-        response.raise_for_status()
-        payload = response.json()
-    except httpx.HTTPError as exc:
-        raise JustWatchError(f"JustWatchへのリクエストに失敗しました: {exc}") from exc
+    payload = _post_graphql("GetNewTitles", _NEW_TITLES_QUERY, variables)
 
     if "errors" in payload:
         raise JustWatchError(f"JustWatch APIがエラーを返しました: {payload['errors']}")
@@ -239,6 +284,7 @@ def fetch_full_catalog(
             for title in page:
                 results_by_id[title.id] = title
             bucket_count += len(page)
+            time.sleep(_REQUEST_INTERVAL_SECONDS)
             if len(page) < page_size:
                 break  # この区間はこれ以上ページが無い
             offset += page_size
@@ -277,18 +323,7 @@ def _fetch_catalog_page(
             "releaseYear": {"min": min_release_year, "max": max_release_year},
         },
     }
-    body = {
-        "operationName": "GetPopularTitles",
-        "variables": variables,
-        "query": _POPULAR_TITLES_QUERY,
-    }
-
-    try:
-        response = httpx.post(_GRAPHQL_URL, json=body, timeout=30)
-        response.raise_for_status()
-        payload = response.json()
-    except httpx.HTTPError as exc:
-        raise JustWatchError(f"JustWatchへのリクエストに失敗しました: {exc}") from exc
+    payload = _post_graphql("GetPopularTitles", _POPULAR_TITLES_QUERY, variables)
 
     if "errors" in payload:
         raise JustWatchError(f"JustWatch APIがエラーを返しました: {payload['errors']}")
