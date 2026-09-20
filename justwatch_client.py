@@ -269,7 +269,7 @@ def fetch_full_catalog(
     for min_year, max_year in year_buckets:
         bucket_count = 0
         offset = 0
-        while offset + _MAX_PAGE_SIZE <= _CATALOG_PAGE_CAP:
+        while offset < _CATALOG_PAGE_CAP:
             page_size = min(_MAX_PAGE_SIZE, _CATALOG_PAGE_CAP - offset)
             page = _fetch_catalog_page(
                 provider_short_name,
