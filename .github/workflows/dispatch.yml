@@ -2,16 +2,17 @@ name: Notify
 
 on:
   repository_dispatch:
-    types: [run-notify, init-read, test-notify]
+    types: [run-notify, weekly-catalog-check, init-read, test-notify]
   workflow_dispatch:
     inputs:
       event_type:
-        description: "run-notify / init-read / test-notify"
+        description: "run-notify / weekly-catalog-check / init-read / test-notify"
         required: true
         default: "test-notify"
         type: choice
         options:
           - run-notify
+          - weekly-catalog-check
           - init-read
           - test-notify
 
@@ -40,6 +41,9 @@ jobs:
           case "$EVENT_TYPE" in
             run-notify)
               python main.py
+              ;;
+            weekly-catalog-check)
+              python weekly_catalog_check.py
               ;;
             init-read)
               python init_read.py

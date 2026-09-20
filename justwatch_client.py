@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime, timezone
 
 import httpx
 
@@ -54,6 +55,51 @@ query GetNewTitles(
     }
 }
 """
+
+
+_POPULAR_TITLES_QUERY = """
+query GetPopularTitles(
+    $country: Country!,
+    $language: Language!,
+    $first: Int!,
+    $offset: Int,
+    $filter: TitleFilter,
+    $formatPoster: ImageFormat,
+    $profile: PosterProfile,
+    $offerFilter: OfferFilter!
+) {
+    popularTitles(
+        country: $country, first: $first, offset: $offset, filter: $filter, sortBy: POPULAR
+    ) {
+        edges {
+            node {
+                id
+                objectType
+                content(country: $country, language: $language) {
+                    title
+                    posterUrl(profile: $profile, format: $formatPoster)
+                }
+                offers(country: $country, platform: WEB, filter: $offerFilter) {
+                    monetizationType
+                    package {
+                        shortName
+                    }
+                }
+            }
+        }
+    }
+}
+"""
+
+# popularTitles(≒全件カタログ取得用)は`first + offset`が2000以上になると
+# エラーにならず無条件で空リストを返す（実機確認済み。TOO_BIGエラーにはならない）。
+# 1クエリだけでは最大1999件までしか取得できないため、`fetch_full_catalog`では
+# `min_release_year`/`max_release_year`で年代を分割し、各区間が1999件を
+# 超えないようにして全件を合算する（実機確認済み：Netflix/Prime Videoともに
+# 1年単位に分割すれば各区間は1999件を大きく下回る）。
+_CATALOG_PAGE_CAP = 1999
+_CATALOG_PAGE_CAP_WARN_THRESHOLD = 1900  # この件数に達したら分割が粗すぎる可能性
+_CATALOG_OLD_ERA_BUCKETS = [(None, 1979), (1980, 1999)]
 
 
 class JustWatchError(Exception):
@@ -147,6 +193,108 @@ def _fetch_page(
 
     try:
         edges = payload["data"]["newTitles"]["edges"]
+    except (KeyError, TypeError) as exc:
+        raise JustWatchError(
+            f"JustWatchのレスポンス形式が想定と異なります: {payload}"
+        ) from exc
+
+    return [_parse_node(edge["node"]) for edge in edges]
+
+
+def fetch_full_catalog(
+    provider_short_name: str,
+    country: str,
+    language: str,
+    object_types: list[str],
+) -> list[NewTitle]:
+    """指定プロバイダの現在配信中の全タイトルを取得する（週次の全件チェック用）。
+
+    `popularTitles`は1クエリあたり最大1999件までしか返せない制約があるため、
+    `min_release_year`/`max_release_year`で公開年ごとに区切って複数回に分けて
+    取得し、結果をID重複排除しつつ連結する。年の上限は実行時点の翌年まで
+    （JustWatchには公開前の作品が翌年の年号で既に登録されていることがあるため）
+    とし、毎回の実行時に動的に計算するので年が変わっても対応不要。
+    """
+    current_year = datetime.now(timezone.utc).year
+    year_buckets = list(_CATALOG_OLD_ERA_BUCKETS) + [
+        (year, year) for year in range(2000, current_year + 2)
+    ]
+
+    results_by_id: dict[str, NewTitle] = {}
+    for min_year, max_year in year_buckets:
+        bucket_count = 0
+        offset = 0
+        while offset + _MAX_PAGE_SIZE <= _CATALOG_PAGE_CAP:
+            page_size = min(_MAX_PAGE_SIZE, _CATALOG_PAGE_CAP - offset)
+            page = _fetch_catalog_page(
+                provider_short_name,
+                page_size,
+                offset,
+                country,
+                language,
+                object_types,
+                min_year,
+                max_year,
+            )
+            for title in page:
+                results_by_id[title.id] = title
+            bucket_count += len(page)
+            if len(page) < page_size:
+                break  # この区間はこれ以上ページが無い
+            offset += page_size
+        if bucket_count >= _CATALOG_PAGE_CAP_WARN_THRESHOLD:
+            print(
+                f"[fetch_full_catalog] 警告: 区間({min_year}-{max_year})が"
+                f"{bucket_count}件でJustWatchの1999件上限に接近しています。"
+                "この区間の一部タイトルが取得できていない可能性があるため、"
+                "年の分割をさらに細かくすることを検討してください。"
+            )
+
+    return list(results_by_id.values())
+
+
+def _fetch_catalog_page(
+    provider_short_name: str,
+    first: int,
+    offset: int,
+    country: str,
+    language: str,
+    object_types: list[str],
+    min_release_year: int | None,
+    max_release_year: int | None,
+) -> list[NewTitle]:
+    variables = {
+        "country": country,
+        "language": language,
+        "first": first,
+        "offset": offset,
+        "formatPoster": "JPG",
+        "profile": "S718",
+        "offerFilter": {"bestOnly": True},
+        "filter": {
+            "packages": [provider_short_name],
+            "objectTypes": object_types,
+            "releaseYear": {"min": min_release_year, "max": max_release_year},
+        },
+    }
+    body = {
+        "operationName": "GetPopularTitles",
+        "variables": variables,
+        "query": _POPULAR_TITLES_QUERY,
+    }
+
+    try:
+        response = httpx.post(_GRAPHQL_URL, json=body, timeout=30)
+        response.raise_for_status()
+        payload = response.json()
+    except httpx.HTTPError as exc:
+        raise JustWatchError(f"JustWatchへのリクエストに失敗しました: {exc}") from exc
+
+    if "errors" in payload:
+        raise JustWatchError(f"JustWatch APIがエラーを返しました: {payload['errors']}")
+
+    try:
+        edges = payload["data"]["popularTitles"]["edges"]
     except (KeyError, TypeError) as exc:
         raise JustWatchError(
             f"JustWatchのレスポンス形式が想定と異なります: {payload}"

@@ -3,10 +3,10 @@
   "language": "ja",
   "object_types": ["MOVIE", "SHOW"],
   "new_titles_fetch_count": 300,
-  "init_fetch_count": 500,
-  "notify_limit_per_run": 30,
+  "notify_limit_per_run": 150,
   "send_interval_seconds": 0.5,
-  "seen_id_retention_days": 90,
+  "discord_embeds_per_message": 10,
+  "rate_limit_max_retries": 3,
   "providers": {
     "netflix": {
       "short_name": "nfx",

@@ -323,3 +323,108 @@ Secrets未設定時は実行時に明確なエラーメッセージで停止さ�
 ---
 
 実装完了。残るのはユーザー側のSecrets登録とcron-job.org設定のみ（README.md参照）。
+
+---
+
+## 13. v2: 週次全件チェック方式への設計変更
+
+運用開始後、以下2点を理由に設計を見直した:
+
+1. `newTitles`（新着順インデックス、件数ベースの取得）だけでは、JustWatch側の
+   インデックス反映漏れや`new_titles_fetch_count`超過による**取りこぼしのリスク**が残る
+2. 「配信終了→カタログから消滅→再配信」されたタイトルを**再度新規通知したい**という要件。
+   従来の`seen_ids`（一度検知したらほぼ恒久的に既読）方式では、90日以内の再配信を
+   拾えなかった
+
+### 13.1 状態設計の変更: `seen` → `active`
+
+`state/{provider}_seen.json`（一度検知したら基本ずっと既読、90日でprune）を廃止し、
+`state/{provider}_active.json`（**現在そのプロバイダに実在すると確認済みのID**、
+`{id: 最終確認日時}`）に置き換えた。
+
+- 6時間毎チェック（`main.py`, newTitlesとの差分）・週次チェック
+  （`weekly_catalog_check.py`, 全件との差分）の**どちらも同じ`active`を見る**
+- `active`に無いIDが見つかったら「新規（または再配信）」として通知しキューに積み、
+  `active`に登録する
+- **消滅の検知は週次チェックだけが行う**: 全件取得した結果と`active`を比較し、
+  「前回はあったが今回は無いID」を`active`から除外する
+- 消滅日時を別途保存して厳密に日数計算する方式（例:「消滅から7日以上で再通知」）は
+  **不採用**。実装をシンプルにするため、「週次チェックの実行間隔（＝概ね1週間）」を
+  そのまま量子化された再通知の粒度として受け入れる。同じ週内で消えて復活した
+  タイトルは、週次チェックからは「ずっとあった」ようにしか見えないため再通知されない
+- `active`は週次チェックのたびに実際のカタログと同期されるため、`seen_ids`のような
+  日数ベースのprune処理は不要になった（サイズはカタログの実サイズに自然に収束する）
+
+### 13.2 週次全件取得: JustWatch `popularTitles`の1999件の壁と年代分割
+
+JustWatchの`popularTitles`（`newTitles`とは別の、全件カタログ相当のクエリ）は、
+`offset + first`が2000以上になると**エラーにはならず無条件で空リストを返す**
+（実機確認済み）。そのため1クエリだけでは最大1999件までしか取得できない。
+
+Netflix JP・Prime Video JPともに、フィルタ無しで叩くと1999件の壁に到達すること
+（＝実カタログはそれ以上ある）を実機確認した。これを回避するため、
+`min_release_year`/`max_release_year`で**公開年ごとに区切って**複数回に分けて
+取得し、結果をID重複排除しつつ連結する方式にした（`justwatch_client.fetch_full_catalog`）。
+
+実機確認した年代ごとの区切り方と件数（2026年時点、Netflix/Prime Video JP）:
+
+- `〜1979`, `1980〜1999`, `2000年〜実行時点の翌年まで`を1年ごと、の29区間
+- どの区間も1999件の壁に到達しないことを確認済み（最大区間でも1,500件未満）
+- Netflix合計 約8,700件、Prime Video合計 約14,000件
+- 年区間は`datetime.now().year`から**実行時点で動的に計算**するため、年が変わっても
+  設定変更は不要。区間の上限を「実行時点の翌年」まで含めているのは、JustWatchには
+  公開前の作品が翌年の年号で既に登録されていることがあるため
+- 万一どこかの区間が1999件の壁に近づいた場合（`_CATALOG_PAGE_CAP_WARN_THRESHOLD`
+  =1900件以上）は、実行ログに警告を出力する。その場合は該当区間をさらに
+  月単位などに分割する対応が必要になる
+
+`popularTitles`のレスポンス形式（`offers`の`monetizationType`/`package.shortName`）は
+`newTitles`と同一のため、Prime Videoの「追加課金なしで見られるものだけ」フィルタ
+（3章）は全件取得側でもそのまま流用できる。
+
+### 13.3 実行頻度の変更: 1時間毎 → 6時間毎 + 週次
+
+- `run-notify`（`main.py`）: 1時間毎 → **6時間毎**に変更。JustWatch側の負荷軽減と、
+  検知遅延の許容（最大6時間程度なら実用上問題ない）とのバランスを取った
+- `weekly-catalog-check`（`weekly_catalog_check.py`）: 新規追加。週1回
+  （例: 毎週日曜04:00 JST）、cron-job.orgに`event_type: "weekly-catalog-check"`の
+  ジョブを追加登録する（README.md参照）
+- `init_read.py`も、newTitlesベースの部分既読化から**全件取得ベースの既読化**に
+  変更した。週次チェックが正しく機能するには`active_{provider}.json`が
+  「現在のカタログ全体」を正しく反映している必要があるため
+
+### 13.4 Discord通知のバッチ化と429リトライ方式の変更
+
+- 6時間毎に間隔を伸ばしたことで1回あたりの蓄積件数が増える見込みのため、
+  `notify_limit_per_run`を30→150に引き上げた
+- 1件＝1メッセージだった送信方式を、**最大`discord_embeds_per_message`
+  （デフォルト10）件を1メッセージのembedとしてまとめて送る**方式に変更
+  （`notifier.send_title_embeds` / `queue_runner.drain_queue`）。
+  Discordの複数embed画像グルーピング表示（同一メッセージ内で画像が並んで
+  表示される挙動）は非公式・undocumentedな挙動のため、列数を確実に
+  コントロールすることはできない。実際の見た目は`test-notify`等で都度確認する
+- 429時の挙動を変更: 従来は「即座に送信ループを打ち切り、次回実行に持ち越す」
+  方式だったが、実行間隔が6時間に伸びたことで持ち越しの影響が大きくなるため、
+  **`retry_after`だけ`sleep`して同一実行内でリトライ**する方式に変更した。
+  連続で`rate_limit_max_retries`（デフォルト3）回失敗した場合のみ、
+  本当に輻輳が続いていると判断して打ち切り、残りを次回実行に持ち越す
+  （破棄はしない）
+
+### 13.5 ファイル構成の変更点
+
+```
+netflix-prime-notifier/
+├── main.py                    # 6時間毎: newTitles差分チェック
+├── weekly_catalog_check.py    # 新規: 週次の全件チェック
+├── init_read.py               # 変更: 全件取得ベースの初回既読化に変更
+├── queue_runner.py            # 新規: キュー送信処理を共通化（main.py/weekly_catalog_check.pyで共有）
+├── webhook_config.py          # 新規: Webhook URL解決処理を共通化
+├── justwatch_client.py        # 追加: fetch_full_catalog（年代分割による全件取得）
+├── notifier.py                 # 追加: send_title_embeds（複数embedをまとめて送信）
+├── state_manager.py            # 変更: seen_*.json → active_*.json（prune処理は廃止）
+└── state/
+    ├── netflix_active.json     # 変更: 旧netflix_seen.jsonを置き換え
+    ├── prime_video_active.json
+    ├── netflix_queue.json
+    └── prime_video_queue.json
+```
