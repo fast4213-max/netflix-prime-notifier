@@ -30,6 +30,19 @@ def load_config() -> dict:
         return json.load(f)
 
 
+
+# animephilia_client.pyが実際にサイトの中身（nonce/レスポンス形式）を見て
+# 「構造が変わった」と判断できたときだけ使う文言。process_provider側の
+# エラー文はどれも「Animephiliaからの新着取得に失敗しました: {内訳}」という
+# 同じ枕詞で始まるため、枕詞では判別できない。内訳側にこれらの文言が
+# 含まれるかどうかで、タイムアウト等の接続層の一時的な不調と区別する。
+_STRUCTURE_ERROR_MARKERS = (
+    "構造が変わった",
+    "レスポンス形式が想定と異なります",
+    "レスポンスがカレンダー形式ではありません",
+)
+
+
 def broadcast_errors(config: dict, errors: list[str]) -> None:
     """実行中に溜まったエラーを1通にまとめ、両方のチャンネルへ送る。
 
@@ -48,14 +61,24 @@ def broadcast_errors(config: dict, errors: list[str]) -> None:
         print(f"エラー{len(errors)}件はクールダウン中のため通知を省略しました。")
         return
 
+    # 1件でもnonce取得失敗やレスポンス形式異常（＝実際にサイトの中身が
+    # 変わった疑いが強いもの）が混ざっていれば構造変化を疑う文言にする。
+    # 該当が無ければ、残るのはタイムアウト/5xx等の接続層の一時的な不調
+    # なので、構造変化を疑わせる強い文言は避ける。
+    if not any(marker in e for e in fresh for marker in _STRUCTURE_ERROR_MARKERS):
+        hint = (
+            "Animephiliaへの接続に失敗しました。サイトの構造が変わったのではなく、"
+            "一時的なネットワーク不調の可能性が高いです。通常は次回実行で自動復旧します。"
+            "何時間も続く場合はサイトの構造変化を疑ってください。"
+        )
+    else:
+        hint = (
+            "サイトの構造が変わった可能性があります。GitHub Actionsの実行ログ"
+            "（Notifyワークフロー）にエラー詳細を残してあるので確認してください。"
+        )
+
     body = "\n".join(f"・{e}" for e in fresh)
-    message = (
-        "⚠️ 新着チェックでエラーが発生しました。\n"
-        f"{body}\n"
-        "サイトの構造が変わった可能性があります。GitHub Actionsの実行ログ"
-        "（Notifyワークフロー）にエラー詳細を残してあるので確認してください。"
-        "次回実行時に再試行します。"
-    )
+    message = f"⚠️ 新着チェックでエラーが発生しました。\n{body}\n{hint}\n次回実行時に再試行します。"
 
     for provider_key, provider_cfg in config["providers"].items():
         webhook_url = resolve_webhook_url(provider_key, provider_cfg)
