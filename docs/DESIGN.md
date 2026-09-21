@@ -428,3 +428,133 @@ netflix-prime-notifier/
     ├── netflix_queue.json
     └── prime_video_queue.json
 ```
+
+---
+
+## 14. v3: 6時間毎チェックをJustWatchからAnimephiliaに切り替え
+
+運用開始後、`newTitles`インデックスが実際には新着を検知できていない疑いが出た
+（本来出ているはずの新着が拾えていない）。JustWatch非公式APIの反映漏れは元々
+既知のリスクだったため（4章参照）、6時間毎チェックの情報源を差し替えることにした。
+
+### 14.1 代替データソースの調査
+
+[Animephilia](https://animephilia.net/)（アニメ配信情報サイト、検索結果で上位に
+出るためユーザーが実際に使っている＝信頼できると判断）のNetflix/Prime Video
+「新着・配信予定カレンダー」記事を調査した。
+
+記事ページ自体（例:
+[`/netflix-arrival-calendar/`](https://animephilia.net/netflix-arrival-calendar/)、
+[`/amazon-prime-video-arrival-calendar/`](https://animephilia.net/amazon-prime-video-arrival-calendar/)）
+は静的HTMLの時点では中身が空で、JS（WordPressプラグイン`my-simplecalendar`）が
+ページ読込後に非公開のWordPress管理者向けajaxエンドポイント
+(`/wp-admin/admin-ajax.php`, `action=get_svod_calendar_events`)を叩いて
+イベントデータをJSON取得し、カレンダーとして描画している。これを直接
+POSTすることで、JS実行なしにデータを取得できることを実機確認した。
+
+```
+POST https://animephilia.net/wp-admin/admin-ajax.php
+  action=get_svod_calendar_events
+  service=netflix | prime_video
+  type=new
+  genre=all
+  path=<記事のURLパス>              # 例: /netflix-arrival-calendar/
+  nonce=<ページ本文の`ajax_calendar`変数から取得>
+
+→ { "2026-09-15": [{title, start, url, region, kind, genres, image, tags}, ...], ... }
+```
+
+確認できた重要な性質（実機確認済み）:
+
+- `path`に記事のトップパスを指定した場合、**当日を含む直近1週間分**が返る
+  （`path`に`/month/YYYY/MM/`を付けると任意の月のカレンダー範囲が返るが、
+  6時間毎チェックでは使わない。後述）
+- `genre=all`を指定すると、**アニメに限らず映画・国内外ドラマ等すべての
+  ジャンル**が対象になる（サイト自体はアニメ特化だが、このカレンダーは
+  ジャンルを問わず配信サービス全体の新着を扱っている）。当初は
+  アニメ専用の季節カレンダー記事（`<script type="application/json"
+  id="2026-fall-anime-netflix">`のような、シーズンごとの配信予定を
+  埋め込んだJSONブロック）しか見つけられなかったため通知対象がアニメに
+  限定される懸念があったが、この`genre=all`のカレンダーを使うことで
+  従来通り映画・シリーズ全体を対象にできる
+- Prime Video側はサイト側が「対象：プライム会員特典（見放題）作品のみ掲載」
+  と明記しており、レンタル/購入のみのタイトルは元から含まれない
+  （3章のJustWatch側フィルタと同じ意図に自然と合致）
+- `type=new`（デフォルトのカレンダー記事の設定）で返る範囲には、
+  **配信日が未来のタイトルは含まれない**。カレンダー記事自体は将来の
+  配信予定も扱っているが、それは`/month/YYYY/MM/`で未来月を指定した
+  場合にのみ現れ、その場合は`url`/`image`が空（未確定）のことがある。
+  デフォルトの「直近1週間」レスポンスでは実機確認した範囲で全件`url`が
+  埋まっていた（＝配信確定済みのみ）。
+  **6時間毎チェックでは`/month/`は使わず常にデフォルトの直近1週間分だけを
+  見るため、未確定の未来作品を通知してしまうことは無い**。アニメ専用の
+  季節カレンダーJSON（将来の配信予定の事前告知データ）は一切使用しない
+  （未来の作品は「実際に配信されてから」上記のカレンダーAPI経由で
+  自然に検知・通知される設計であり、事前告知データを個別に扱う必要はない）
+- 記事の掲載タイミングは配信日そのものではなく「情報が確認でき次第」
+  更新される運用のため、掲載が配信日から数日遅れることがある
+  （例: 配信日が2日前でも、掲載＝レスポンスに現れるのは今日、ということが
+  実際にあり得る）。そのため**「配信日が今日かどうか」ではなく、
+  「直近1週間分のレスポンスに含まれるIDが既知(`active_animephilia_*.json`)
+  かどうか」で新着判定する**（12.1節のactive方式と同じ考え方を流用）
+
+### 14.2 非公式・非公開APIであることのリスクと対策
+
+このajaxエンドポイントはサイトの管理画面向け内部実装であり、公式に
+提供されているAPIではない。サイトの実装変更で無告知に壊れる前提で運用する:
+
+- 取得処理は`animephilia_client.py`に隔離し、失敗時は`AnimephiliaError`を
+  送出してエラーチャンネルに通知する（4章のJustWatch方針と同じ）
+- 壊れた場合は都度作り直す（構造の互換性維持や後方互換シムは追わない）
+
+### 14.3 状態管理: JustWatchとAnimephiliaでIDの体系が違う問題
+
+Animephiliaが返すIDは自前のタイトルURL（`netflix.com/title/...`、
+`amazon.co.jp/gp/video/detail/...`）であり、JustWatchのコンテンツID
+（`tm1234567`のような形式）とは無関係。もし同じ`active_{provider}.json`を
+共有すると、週次のJustWatch全件チェック（12章）が「全件取得したIDに
+含まれない」ものとして扱い、Animephilia経由で検知したIDを毎週
+誤って`active`から削除してしまう（＝週が明けるたびに再度「新着」として
+誤通知され続ける）。
+
+これを避けるため、`state_manager.py`に`source`引数を追加し、状態ファイルを
+検知経路ごとに分離した:
+
+- `active_{provider}.json`（source="justwatch"、従来通り） …
+  週次の全件チェックが使う
+- `active_animephilia_{provider}.json`（source="animephilia"、新規） …
+  6時間毎チェックが使う。こちらは「消滅」の検知は行わない
+  （一度出た配信は残り続け、消えた場合の再通知は週次チェック側に任せる）
+- `queue_{provider}.json`は検知経路によらず共有のまま
+  （送信待ちの入れ物であり、IDの体系不一致は問題にならないため）
+
+`init_read.py`もAnimephilia側の状態を初回に通知なしで既読化するように
+拡張した（直近1週間分をそのまま「新規」として初回に一斉通知しないため）。
+
+### 14.4 週次全件チェックは引き続きJustWatchを使用
+
+Animephiliaには「現在配信中の全タイトル一覧」に相当するデータが無い
+（あくまで日々の新着カレンダーのみ）。「取りこぼしの補完」「配信終了→
+再配信の検知」という週次チェックの役割はAnimephiliaでは代替できないため、
+`weekly_catalog_check.py`は変更せずJustWatchの`fetch_full_catalog`を
+使い続ける。
+
+### 14.5 ファイル構成の変更点
+
+```
+netflix-prime-notifier/
+├── main.py                          # 変更: animephilia_client経由に切り替え
+├── test_notify.py                   # 変更: 同上
+├── init_read.py                     # 変更: Animephilia側の初回既読化を追加
+├── animephilia_client.py            # 新規: Animephiliaカレンダーajax取得
+├── state_manager.py                 # 変更: source引数を追加し状態ファイルを分離
+├── weekly_catalog_check.py          # 変更なし（JustWatch全件チェックのまま）
+├── justwatch_client.py              # 変更なし（週次チェック・init_readで使用継続）
+└── state/
+    ├── netflix_active.json           # JustWatch(tm-id)、週次チェック用
+    ├── prime_video_active.json
+    ├── netflix_active_animephilia.json   # 新規: Animephilia(URL)、6時間毎チェック用
+    ├── prime_video_active_animephilia.json
+    ├── netflix_queue.json
+    └── prime_video_queue.json
+```
