@@ -1,7 +1,6 @@
 """送信待ちキューをDiscordへ送信する共通処理。
 
-main.py（6時間毎の新着チェック）とweekly_catalog_check.py（週次の全件
-チェック）の両方から使う。
+main.py（6時間毎の新着チェック）から使う。
 """
 
 from __future__ import annotations

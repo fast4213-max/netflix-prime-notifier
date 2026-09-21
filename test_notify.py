@@ -9,7 +9,7 @@ import json
 import os
 from pathlib import Path
 
-from justwatch_client import JustWatchError, fetch_new_titles
+from animephilia_client import AnimephiliaError, fetch_recent_events
 from notifier import send_title_embed
 
 CONFIG_PATH = Path(__file__).parent / "config.json"
@@ -31,18 +31,12 @@ def main() -> None:
         title = "テスト通知"
         image_url = None
         try:
-            candidates = fetch_new_titles(
-                provider_short_name=provider_cfg["short_name"],
-                count=1,
-                country=config["country"],
-                language=config["language"],
-                object_types=config["object_types"],
-            )
+            candidates = fetch_recent_events(provider_key)
             if candidates:
                 title = f"[テスト通知] {candidates[0].title}"
-                image_url = candidates[0].poster_url
-        except JustWatchError as exc:
-            print(f"[{provider_key}] JustWatch取得に失敗したため固定テキストで送信します: {exc}")
+                image_url = candidates[0].image_url
+        except AnimephiliaError as exc:
+            print(f"[{provider_key}] Animephilia取得に失敗したため固定テキストで送信します: {exc}")
 
         send_title_embed(webhook_url, title, image_url)
         print(f"[{provider_key}] 試験通知を送信しました: {title}")

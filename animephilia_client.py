@@ -1,0 +1,134 @@
+"""Animephilia(animephilia.net)の配信カレンダーから新着タイトルを取得するクライアント。
+
+JustWatchの`newTitles`インデックスが新着を検知できていない疑いがあるため、
+6時間毎の新着チェックはこちらに置き換える。Animephiliaの「新着・配信予定
+カレンダー」ページ（アニメに限らずNetflix/Prime Videoの全ジャンルを扱う方の
+ページ）が使っているWordPress管理者向けajaxの内部エンドポイント
+(`get_svod_calendar_events`)を直接叩く。
+
+これは非公開の内部APIであり、サイトの実装が変わればいつ壊れてもおかしくない
+（そのときは作り直す前提）。ページ本文をパースするより、このエンドポイントを
+叩く方がサイト側のJS実装と同じ土俵に立てるため崩れにくいと判断した。
+
+引数無しでこのAPIを呼ぶと、当日を含む直近1週間分のイベントが返る
+（実機確認済み）。カレンダー記事側は「配信日が確定してから掲載」する運用の
+ため、掲載日が配信日より数日後になることがある。そのため呼び出し側では
+「配信日が今日かどうか」ではなく、この1週間分のレスポンスに含まれる
+IDが既知かどうかで新着判定を行うこと。
+"""
+
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass
+from urllib.parse import urlsplit, urlunsplit
+
+import httpx
+
+_BASE_URL = "https://animephilia.net"
+_AJAX_URL = f"{_BASE_URL}/wp-admin/admin-ajax.php"
+
+_ARRIVAL_CALENDAR_PATH = {
+    "netflix": "/netflix-arrival-calendar/",
+    "prime_video": "/amazon-prime-video-arrival-calendar/",
+}
+
+# ページのインラインスクリプトに `ajax_calendar = {"url":"...","nonce":"..."}`
+# という形で埋め込まれているWordPressのnonce。ajax呼び出しの度に必要。
+_NONCE_PATTERN = re.compile(r'ajax_calendar\s*=\s*\{"url":"[^"]*","nonce":"([0-9a-f]+)"\}')
+
+
+class AnimephiliaError(Exception):
+    """Animephiliaからのカレンダー取得に失敗したときに送出する。"""
+
+
+@dataclass(frozen=True)
+class CalendarEvent:
+    id: str
+    title: str
+    start_date: str
+    url: str | None
+    image_url: str | None
+
+
+def _strip_tracking_params(url: str) -> str:
+    """Amazonのアフィリエイトタグ(`?tag=...`)などのクエリ文字列を取り除く。
+
+    当サイトのアフィリエイトIDを自分たちの通知にそのまま埋め込みたくないため。
+    """
+    parts = urlsplit(url)
+    return urlunsplit((parts.scheme, parts.netloc, parts.path, "", ""))
+
+
+def _fetch_nonce(provider_short_name: str) -> str:
+    page_path = _ARRIVAL_CALENDAR_PATH[provider_short_name]
+    try:
+        response = httpx.get(_BASE_URL + page_path, timeout=30, follow_redirects=True)
+        response.raise_for_status()
+    except httpx.HTTPError as exc:
+        raise AnimephiliaError(f"Animephiliaのページ取得に失敗しました: {exc}") from exc
+
+    match = _NONCE_PATTERN.search(response.text)
+    if not match:
+        raise AnimephiliaError(
+            "Animephiliaのページからnonceを取得できませんでした"
+            "（サイトの構造が変わった可能性があります）"
+        )
+    return match.group(1)
+
+
+def fetch_recent_events(provider_short_name: str) -> list[CalendarEvent]:
+    """直近1週間分（当日含む）の新着イベントを取得する。
+
+    provider_short_name: "netflix" または "prime_video"
+    """
+    page_path = _ARRIVAL_CALENDAR_PATH[provider_short_name]
+    nonce = _fetch_nonce(provider_short_name)
+
+    try:
+        response = httpx.post(
+            _AJAX_URL,
+            data={
+                "action": "get_svod_calendar_events",
+                "service": provider_short_name,
+                "type": "new",
+                "genre": "all",
+                "path": page_path,
+                "nonce": nonce,
+            },
+            timeout=30,
+        )
+        response.raise_for_status()
+        payload = response.json()
+    except httpx.HTTPError as exc:
+        raise AnimephiliaError(f"Animephiliaのカレンダー取得に失敗しました: {exc}") from exc
+    except ValueError as exc:
+        raise AnimephiliaError(
+            f"Animephiliaのレスポンスがカレンダー形式ではありません: {exc}"
+        ) from exc
+
+    if not isinstance(payload, dict):
+        raise AnimephiliaError(f"Animephiliaのレスポンス形式が想定と異なります: {payload}")
+
+    events: list[CalendarEvent] = []
+    for date, items in payload.items():
+        if not isinstance(items, list):
+            raise AnimephiliaError(f"Animephiliaのレスポンス形式が想定と異なります: {payload}")
+        for item in items:
+            title = item.get("title")
+            if not title:
+                continue
+            raw_url = item.get("url") or None
+            url = _strip_tracking_params(raw_url) if raw_url else None
+            # urlが確認されていないタイトルはidの一意性をtitle+dateで代用する。
+            event_id = url or f"{provider_short_name}:{date}:{title}"
+            events.append(
+                CalendarEvent(
+                    id=event_id,
+                    title=title,
+                    start_date=item.get("start", date),
+                    url=url,
+                    image_url=item.get("image") or None,
+                )
+            )
+    return events

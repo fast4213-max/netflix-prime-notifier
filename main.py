@@ -1,9 +1,10 @@
-"""本番実行: JustWatchの新着を取得し、Discordの各チャンネルへ通知する。
+"""本番実行: Animephiliaの配信カレンダーから新着を取得し、Discordの各チャンネルへ通知する。
 
 repository_dispatch (event_type=run-notify) から呼ばれる想定。
-6時間毎の実行で、直近の新着インデックス(newTitles)との差分のみを見る。
-取りこぼしや「配信終了→再配信」の検知はweekly_catalog_check.py（週次の
-全件チェック）が担当する。
+6時間毎の実行で、Animephiliaのカレンダーが返す直近1週間分のイベントとの
+差分のみを見る（JustWatch経由の方式は新着を検知できていなかったため廃止し、
+animephilia_client経由のこの方式に一本化した。過去のカタログ全体との
+突き合わせは行わず、今後の配信のみを対象とする）。
 """
 
 from __future__ import annotations
@@ -13,7 +14,7 @@ import traceback
 from pathlib import Path
 
 import state_manager
-from justwatch_client import JustWatchError, fetch_new_titles
+from animephilia_client import AnimephiliaError, fetch_recent_events
 from queue_runner import drain_queue, try_send_error
 from webhook_config import resolve_webhook_url
 
@@ -34,32 +35,21 @@ def process_provider(provider_key: str, provider_cfg: dict, config: dict) -> Non
     queue = state_manager.load_queue(provider_key)
 
     try:
-        candidates = fetch_new_titles(
-            provider_short_name=provider_cfg["short_name"],
-            count=config["new_titles_fetch_count"],
-            country=config["country"],
-            language=config["language"],
-            object_types=config["object_types"],
-        )
-    except JustWatchError as exc:
-        print(f"[{provider_key}] JustWatch取得エラー: {exc}")
+        candidates = fetch_recent_events(provider_key)
+    except AnimephiliaError as exc:
+        print(f"[{provider_key}] Animephilia取得エラー: {exc}")
         try_send_error(
             webhook_url,
-            f"⚠️ [{provider_key}] JustWatchからの新着取得に失敗しました: {exc}\n"
+            f"⚠️ [{provider_key}] Animephiliaからの新着取得に失敗しました: {exc}\n"
             "次回実行時に再試行します。",
         )
         # 取得失敗時もキューの続きだけは送っておく（新規追加は無し）
         drain_queue(provider_key, webhook_url, queue, config)
         return
 
-    allowed_types = provider_cfg["allowed_monetization_types"]
-    matched = [
-        c for c in candidates if c.has_offer(provider_cfg["short_name"], allowed_types)
-    ]
-
     now = state_manager.now_iso()
     new_count = 0
-    for entry in matched:
+    for entry in candidates:
         if entry.id in active:
             continue
         active[entry.id] = now
@@ -67,14 +57,14 @@ def process_provider(provider_key: str, provider_cfg: dict, config: dict) -> Non
             {
                 "id": entry.id,
                 "title": entry.title,
-                "image_url": entry.poster_url,
+                "image_url": entry.image_url,
                 "detected_at": now,
             }
         )
         new_count += 1
 
     print(
-        f"[{provider_key}] 候補{len(candidates)}件中、条件に合う新着{new_count}件を検知。"
+        f"[{provider_key}] 候補{len(candidates)}件中、新着{new_count}件を検知。"
         f"送信待ちキュー: {len(queue)}件"
     )
 
