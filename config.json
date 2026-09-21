@@ -3,6 +3,7 @@
   "send_interval_seconds": 0.5,
   "discord_embeds_per_message": 10,
   "rate_limit_max_retries": 3,
+  "max_rejected_per_run": 5,
   "providers": {
     "netflix": {
       "webhook_env": "DISCORD_WEBHOOK_NETFLIX"

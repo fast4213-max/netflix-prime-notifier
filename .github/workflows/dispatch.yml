@@ -18,6 +18,14 @@ on:
 permissions:
   contents: write
 
+# state/*.json は「通知済みかどうか」の唯一の記録なので、実行が重なると
+# 両方が同じstateを読んで同じ新着を二重通知し、後からpushした側が弾かれる。
+# 直列化して必ず1実行ずつにする（cancel-in-progressにはしない。途中で
+# 止めるとキューの送信途中でstateが未保存のまま失われるため）。
+concurrency:
+  group: notify-state
+  cancel-in-progress: false
+
 jobs:
   notify:
     runs-on: ubuntu-latest
@@ -57,10 +65,22 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if [ -n "$(git status --porcelain state/)" ]; then
-            git add state/
-            git commit -m "Update notification state [skip ci]"
-            git push
-          else
+          if [ -z "$(git status --porcelain state/)" ]; then
             echo "No state changes to commit."
+            exit 0
           fi
+          git add state/
+          git commit -m "Update notification state [skip ci]"
+          # pushが弾かれたままだと「通知済み」の記録が消えて次回に二重通知が出る。
+          # 他のコミットが入っていた場合に備えてrebaseしてから数回リトライする。
+          for attempt in 1 2 3 4 5; do
+            if git push; then
+              echo "state pushed (attempt $attempt)"
+              exit 0
+            fi
+            echo "push failed (attempt $attempt). rebasing and retrying..."
+            git pull --rebase --autostash origin "$(git rev-parse --abbrev-ref HEAD)" || true
+            sleep $((attempt * 3))
+          done
+          echo "::error::Failed to push state changes after 5 attempts."
+          exit 1

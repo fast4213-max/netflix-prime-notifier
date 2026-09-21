@@ -20,6 +20,7 @@ IDが既知かどうかで新着判定を行うこと。
 from __future__ import annotations
 
 import re
+import time
 from dataclasses import dataclass
 from urllib.parse import urlsplit, urlunsplit
 
@@ -27,6 +28,11 @@ import httpx
 
 _BASE_URL = "https://animephilia.net"
 _AJAX_URL = f"{_BASE_URL}/wp-admin/admin-ajax.php"
+
+# 一時的なネットワーク断や5xxで「サイト構造が変わった」旨のエラー通知が飛ぶのは
+# 誤報なので、諦める前に数回リトライする。
+_MAX_ATTEMPTS = 3
+_RETRY_BACKOFF_SECONDS = (2, 5)
 
 _ARRIVAL_CALENDAR_PATH = {
     "netflix": "/netflix-arrival-calendar/",
@@ -60,13 +66,29 @@ def _strip_tracking_params(url: str) -> str:
     return urlunsplit((parts.scheme, parts.netloc, parts.path, "", ""))
 
 
+def _request_with_retry(description: str, send):
+    """`send()`を最大`_MAX_ATTEMPTS`回試し、全滅したらAnimephiliaErrorにする。"""
+    last_exc: httpx.HTTPError | None = None
+    for attempt in range(_MAX_ATTEMPTS):
+        try:
+            response = send()
+            response.raise_for_status()
+            return response
+        except httpx.HTTPError as exc:
+            last_exc = exc
+            if attempt < _MAX_ATTEMPTS - 1:
+                wait = _RETRY_BACKOFF_SECONDS[attempt]
+                print(f"{description}に失敗しました（{exc}）。{wait}秒後に再試行します。")
+                time.sleep(wait)
+    raise AnimephiliaError(f"{description}に失敗しました: {last_exc}") from last_exc
+
+
 def _fetch_nonce(provider_short_name: str) -> str:
     page_path = _ARRIVAL_CALENDAR_PATH[provider_short_name]
-    try:
-        response = httpx.get(_BASE_URL + page_path, timeout=30, follow_redirects=True)
-        response.raise_for_status()
-    except httpx.HTTPError as exc:
-        raise AnimephiliaError(f"Animephiliaのページ取得に失敗しました: {exc}") from exc
+    response = _request_with_retry(
+        "Animephiliaのページ取得",
+        lambda: httpx.get(_BASE_URL + page_path, timeout=30, follow_redirects=True),
+    )
 
     match = _NONCE_PATTERN.search(response.text)
     if not match:
@@ -85,8 +107,9 @@ def fetch_recent_events(provider_short_name: str) -> list[CalendarEvent]:
     page_path = _ARRIVAL_CALENDAR_PATH[provider_short_name]
     nonce = _fetch_nonce(provider_short_name)
 
-    try:
-        response = httpx.post(
+    response = _request_with_retry(
+        "Animephiliaのカレンダー取得",
+        lambda: httpx.post(
             _AJAX_URL,
             data={
                 "action": "get_svod_calendar_events",
@@ -97,11 +120,11 @@ def fetch_recent_events(provider_short_name: str) -> list[CalendarEvent]:
                 "nonce": nonce,
             },
             timeout=30,
-        )
-        response.raise_for_status()
+        ),
+    )
+
+    try:
         payload = response.json()
-    except httpx.HTTPError as exc:
-        raise AnimephiliaError(f"Animephiliaのカレンダー取得に失敗しました: {exc}") from exc
     except ValueError as exc:
         raise AnimephiliaError(
             f"Animephiliaのレスポンスがカレンダー形式ではありません: {exc}"
@@ -115,6 +138,10 @@ def fetch_recent_events(provider_short_name: str) -> list[CalendarEvent]:
         if not isinstance(items, list):
             raise AnimephiliaError(f"Animephiliaのレスポンス形式が想定と異なります: {payload}")
         for item in items:
+            if not isinstance(item, dict):
+                raise AnimephiliaError(
+                    f"Animephiliaのレスポンス形式が想定と異なります: {item}"
+                )
             title = item.get("title")
             if not title:
                 continue
