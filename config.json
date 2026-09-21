@@ -1,21 +1,14 @@
 {
-  "country": "JP",
-  "language": "ja",
-  "object_types": ["MOVIE", "SHOW"],
   "notify_limit_per_run": 150,
   "send_interval_seconds": 0.5,
   "discord_embeds_per_message": 10,
   "rate_limit_max_retries": 3,
   "providers": {
     "netflix": {
-      "short_name": "nfx",
-      "webhook_env": "DISCORD_WEBHOOK_NETFLIX",
-      "allowed_monetization_types": ["FLATRATE"]
+      "webhook_env": "DISCORD_WEBHOOK_NETFLIX"
     },
     "prime_video": {
-      "short_name": "amp",
-      "webhook_env": "DISCORD_WEBHOOK_PRIME",
-      "allowed_monetization_types": ["FLATRATE", "FREE", "ADS"]
+      "webhook_env": "DISCORD_WEBHOOK_PRIME"
     }
   }
 }

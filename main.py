@@ -2,10 +2,9 @@
 
 repository_dispatch (event_type=run-notify) から呼ばれる想定。
 6時間毎の実行で、Animephiliaのカレンダーが返す直近1週間分のイベントとの
-差分のみを見る（JustWatchの`newTitles`インデックスが新着を検知できて
-いなかったため、animephilia_client経由のこの方式に切り替えた）。
-取りこぼしや「配信終了→再配信」の検知はweekly_catalog_check.py（週次の
-JustWatch全件チェック）が担当する。
+差分のみを見る（JustWatch経由の方式は新着を検知できていなかったため廃止し、
+animephilia_client経由のこの方式に一本化した。過去のカタログ全体との
+突き合わせは行わず、今後の配信のみを対象とする）。
 """
 
 from __future__ import annotations
@@ -32,7 +31,7 @@ def process_provider(provider_key: str, provider_cfg: dict, config: dict) -> Non
     if not webhook_url:
         return
 
-    active = state_manager.load_active(provider_key, source="animephilia")
+    active = state_manager.load_active(provider_key)
     queue = state_manager.load_queue(provider_key)
 
     try:
@@ -69,7 +68,7 @@ def process_provider(provider_key: str, provider_cfg: dict, config: dict) -> Non
         f"送信待ちキュー: {len(queue)}件"
     )
 
-    state_manager.save_active(provider_key, active, source="animephilia")
+    state_manager.save_active(provider_key, active)
     drain_queue(provider_key, webhook_url, queue, config)
 
 

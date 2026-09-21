@@ -539,7 +539,7 @@ Animephiliaには「現在配信中の全タイトル一覧」に相当するデ
 `weekly_catalog_check.py`は変更せずJustWatchの`fetch_full_catalog`を
 使い続ける。
 
-### 14.5 ファイル構成の変更点
+### 14.5 ファイル構成の変更点（v3時点、後にv4で一部差し戻し）
 
 ```
 netflix-prime-notifier/
@@ -557,4 +557,92 @@ netflix-prime-notifier/
     ├── prime_video_active_animephilia.json
     ├── netflix_queue.json
     └── prime_video_queue.json
+```
+
+---
+
+## 15. v4: JustWatchを完全に廃止し、Animephiliaへ一本化
+
+v3では「6時間毎チェックはAnimephilia、週次の全件チェック（取りこぼし補完・
+再配信検知）はJustWatchのまま残す」というハイブリッド構成にしたが、
+ユーザーの意向により**JustWatch経由の処理を全廃**し、Animephilia単体に
+一本化した。合わせて「過去のカタログ全体を把握する」という要件自体を
+取り下げ、**今後配信されるものだけを検知できればよい**という前提に変更した。
+
+### 15.1 削除したもの
+
+- `justwatch_client.py`（JustWatchの`newTitles`/`popularTitles`クエリ実装）
+- `weekly_catalog_check.py`（週次の全件チェック。JustWatchの`fetch_full_catalog`
+  に依存していたため、代替手段を用意せず機能ごと削除。Animephiliaには
+  全件カタログ相当のデータが無く代替できないが、「今後の配信だけ検知できれば
+  よい」という前提変更により、この機能自体が不要になった）
+- `scripts/debug_justwatch.py` / `.github/workflows/debug.yml`
+  （JustWatch専用のデバッグ手段だったため）
+- `state/netflix_active.json` / `state/prime_video_active.json`
+  （JustWatchのtm-idベースの状態。読み書きするコードが無くなったため削除）
+- `.github/workflows/dispatch.yml`の`weekly-catalog-check`イベント種別
+- `config.json`の`country` / `language` / `object_types` /
+  `providers.*.short_name` / `providers.*.allowed_monetization_types`
+  （すべてJustWatch向けのフィルタ設定。Animephilia側は元々カレンダー記事
+  自体が「Prime会員特典（見放題）」のみに絞って掲載しているため、
+  こちら側でのmonetization種別フィルタは不要）
+
+### 15.2 状態管理: source引数を廃止し単一の`active_{provider}.json`に統合
+
+14.3節で導入した`state_manager.py`の`source`引数（JustWatchとAnimephiliaの
+ID体系が違うため状態ファイルを分離する仕組み）は、JustWatch側が丸ごと
+無くなったことで存在意義が無くなったため撤去した。ファイル名も
+`active_animephilia_{provider}.json`から元の`active_{provider}.json`に戻し、
+`load_active(provider)` / `save_active(provider, active)`という単純な
+シグネチャに戻した。
+
+### 15.3 「配信終了→再配信」の再検知は行わない
+
+週次チェックが担っていた「一度カタログから消えて再配信されたタイトルの
+再通知」機能は、代替を用意せず削除した。Animephiliaの直近1週間カレンダーは
+「消滅」を扱わない（一度通知したIDが二度と消えない）仕様のため、再配信は
+「その配信日でカレンダーに新しいイベントとして載る」場合にのみ拾われる
+（掲載側の運用に依存する）。
+
+### 15.4 直近1週間のローリングウィンドウで「遅延掲載」をどこまで拾えるか
+
+Animephiliaの配信日別カレンダーAPIは、**リクエストした瞬間の「今日」を
+基準にした直近7日間のローリングウィンドウ**を返す（固定の暦週グリッドでは
+ない。実機確認済み: 2026-09-21に叩くと2026-09-15〜21が返り、翌日に叩けば
+2026-09-16〜22が返る）。6時間毎チェックは常にこのデフォルトの直近1週間を
+取得するため、以下のように動く:
+
+- ある作品の配信日が9/19で、Animephilia側の掲載（`url`が確定して
+  レスポンスに現れるタイミング）が9/22〜9/25の間であれば、9/19はまだ
+  ウィンドウ内（`[実行日-6, 実行日]`）に収まっているため通知される
+- 配信日から7日を超えて掲載が遅れた場合（例: 9/26以降に掲載）は
+  ウィンドウの外に出るため取りこぼす
+- 6時間毎に実行しているため、ウィンドウ内であれば掲載後遅くとも6時間以内に
+  検知できる
+
+### 15.5 ファイル構成（最終形）
+
+```
+netflix-prime-notifier/
+├── .github/workflows/
+│   └── dispatch.yml              # repository_dispatch/workflow_dispatch
+│                                    (run-notify / init-read / test-notify)
+├── config.json                   # 通知件数上限などのみ（プロバイダ固有フィルタ設定は無し）
+├── main.py                       # 6時間毎: Animephiliaカレンダーとの差分チェック
+├── animephilia_client.py         # Animephiliaカレンダーajax取得
+├── notifier.py                   # Discord Webhook送信共通処理
+├── queue_runner.py               # 送信待ちキューの処理（main.pyから使用）
+├── webhook_config.py             # Webhook URL解決処理
+├── state_manager.py              # state(JSON)の読み書き
+├── init_read.py                  # 初回セットアップ用：直近1週間分の既読化のみ、通知なし
+├── test_notify.py                # テスト用：各チャンネルに1件だけ試験通知
+├── state/
+│   ├── netflix_active.json       # Animephiliaで既通知のID
+│   ├── prime_video_active.json
+│   ├── netflix_queue.json        # 未送信の新着FIFOキュー
+│   └── prime_video_queue.json
+├── requirements.txt
+├── README.md
+└── docs/
+    └── DESIGN.md                 # 本ドキュメント
 ```
