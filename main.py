@@ -26,6 +26,17 @@ def load_config() -> dict:
         return json.load(f)
 
 
+def broadcast_error(config: dict, message: str) -> None:
+    """Animephiliaのサイト構造が変わった等、片方だけの問題では済まない可能性が
+    ある異常は、通知チャンネルを一方しか見ていない人が気づけないことが無いよう
+    両方のチャンネルに送る。
+    """
+    for other_key, other_cfg in config["providers"].items():
+        webhook_url = resolve_webhook_url(other_key, other_cfg)
+        if webhook_url:
+            try_send_error(webhook_url, message)
+
+
 def process_provider(provider_key: str, provider_cfg: dict, config: dict) -> None:
     webhook_url = resolve_webhook_url(provider_key, provider_cfg)
     if not webhook_url:
@@ -38,9 +49,12 @@ def process_provider(provider_key: str, provider_cfg: dict, config: dict) -> Non
         candidates = fetch_recent_events(provider_key)
     except AnimephiliaError as exc:
         print(f"[{provider_key}] Animephilia取得エラー: {exc}")
-        try_send_error(
-            webhook_url,
+        traceback.print_exc()
+        broadcast_error(
+            config,
             f"⚠️ [{provider_key}] Animephiliaからの新着取得に失敗しました: {exc}\n"
+            "サイトの構造が変わった可能性があります。GitHub Actionsの実行ログ"
+            "（Notifyワークフロー）にエラー詳細を残してあるので確認してください。"
             "次回実行時に再試行します。",
         )
         # 取得失敗時もキューの続きだけは送っておく（新規追加は無し）
@@ -77,9 +91,15 @@ def main() -> None:
     for provider_key, provider_cfg in config["providers"].items():
         try:
             process_provider(provider_key, provider_cfg, config)
-        except Exception:  # noqa: BLE001 1プロバイダの想定外エラーで全体を止めない
+        except Exception as exc:  # noqa: BLE001 1プロバイダの想定外エラーで全体を止めない
             print(f"[{provider_key}] 想定外のエラーが発生しました:")
             traceback.print_exc()
+            broadcast_error(
+                config,
+                f"⚠️ [{provider_key}] 想定外のエラーが発生しました: {exc}\n"
+                "サイトの構造が変わった可能性があります。GitHub Actionsの実行ログ"
+                "（Notifyワークフロー）にエラー詳細を残してあるので確認してください。",
+            )
 
 
 if __name__ == "__main__":
