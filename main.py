@@ -1,7 +1,7 @@
 """本番実行: Animephiliaの配信カレンダーから新着を取得し、Discordの各チャンネルへ通知する。
 
 repository_dispatch (event_type=run-notify) から呼ばれる想定。
-6時間毎の実行で、Animephiliaのカレンダーが返す直近1週間分のイベントとの
+1時間毎の実行で、Animephiliaのカレンダーが返す直近1週間分のイベントとの
 差分のみを見る（JustWatch経由の方式は新着を検知できていなかったため廃止し、
 animephilia_client経由のこの方式に一本化した。過去のカタログ全体との
 突き合わせは行わず、今後の配信のみを対象とする）。

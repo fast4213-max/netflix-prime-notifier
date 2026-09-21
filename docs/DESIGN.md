@@ -617,8 +617,8 @@ Animephiliaの配信日別カレンダーAPIは、**リクエストした瞬間�
   ウィンドウ内（`[実行日-6, 実行日]`）に収まっているため通知される
 - 配信日から7日を超えて掲載が遅れた場合（例: 9/26以降に掲載）は
   ウィンドウの外に出るため取りこぼす
-- 6時間毎に実行しているため、ウィンドウ内であれば掲載後遅くとも6時間以内に
-  検知できる
+- 実行間隔（15.6節の通り最終的に1時間毎）が短いほど、ウィンドウ内であれば
+  掲載後の検知は早くなる
 
 ### 15.5 ファイル構成（最終形）
 
@@ -628,7 +628,7 @@ netflix-prime-notifier/
 │   └── dispatch.yml              # repository_dispatch/workflow_dispatch
 │                                    (run-notify / init-read / test-notify)
 ├── config.json                   # 通知件数上限などのみ（プロバイダ固有フィルタ設定は無し）
-├── main.py                       # 6時間毎: Animephiliaカレンダーとの差分チェック
+├── main.py                       # 1時間毎: Animephiliaカレンダーとの差分チェック
 ├── animephilia_client.py         # Animephiliaカレンダーajax取得
 ├── notifier.py                   # Discord Webhook送信共通処理
 ├── queue_runner.py               # 送信待ちキューの処理（main.pyから使用）
@@ -646,3 +646,25 @@ netflix-prime-notifier/
 └── docs/
     └── DESIGN.md                 # 本ドキュメント
 ```
+
+### 15.6 実行間隔を6時間毎→1時間毎に変更
+
+JustWatch時代は取得コスト（1リクエストあたりのAPI負荷、レート制限）の
+観点から実行間隔を6時間毎にしていたが、Animephilia移行後はリクエスト数が
+大幅に少なく（1プロバイダあたりnonce取得+ajax取得の2リクエストのみ）、
+Discordのレート制限（`config.json`の`rate_limit_max_retries`等で吸収できる
+範囲）にも実行間隔短縮の影響はほぼ無いため、検知の遅延を減らす目的で
+cron-job.org側の`run-notify`実行間隔を1時間毎に変更した。1時間毎にすることで、
+14.1節で述べた「掲載が配信日から遅れる」ケースでも、直近1週間の
+ローリングウィンドウ内であれば掲載後遅くとも1時間以内に検知できる。
+
+### 15.7 データ取得失敗時の通知先を両チャンネルに変更
+
+Animephiliaのajaxエンドポイントが壊れた場合、従来は失敗したプロバイダの
+チャンネルにしかエラー通知していなかった。片方のチャンネルしか見ていない
+運用者が気づけない事態を避けるため、`main.py`に`broadcast_error()`を追加し、
+取得失敗（`AnimephiliaError`、および想定外の例外）時はNetflix/Prime Video
+**両方**のチャンネルにエラーメッセージを送るようにした。また修正を
+やりやすくするため、従来はエラーメッセージの文字列のみをログ出力していた
+箇所を、`traceback.print_exc()`でGitHub Actionsの実行ログにフルスタック
+トレースを残すよう変更した。

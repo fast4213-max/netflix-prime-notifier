@@ -1,7 +1,7 @@
 """Animephilia(animephilia.net)の配信カレンダーから新着タイトルを取得するクライアント。
 
 JustWatchの`newTitles`インデックスが新着を検知できていない疑いがあるため、
-6時間毎の新着チェックはこちらに置き換える。Animephiliaの「新着・配信予定
+1時間毎の新着チェックはこちらに置き換える。Animephiliaの「新着・配信予定
 カレンダー」ページ（アニメに限らずNetflix/Prime Videoの全ジャンルを扱う方の
 ページ）が使っているWordPress管理者向けajaxの内部エンドポイント
 (`get_svod_calendar_events`)を直接叩く。

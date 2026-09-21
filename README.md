@@ -13,9 +13,9 @@ NetflixとPrime Videoの新着タイトルをDiscordの別チャンネルに通�
   （非公式・非公開のAPIのため、サイトの実装が変われば壊れる前提。壊れたら
   作り直す運用とする）
 - 過去のカタログ全体との突き合わせは行わない。**今後配信されるものだけ**を
-  対象とし、6時間毎に直近1週間分のカレンダーとの差分だけを見る
+  対象とし、1時間毎に直近1週間分のカレンダーとの差分だけを見る
 - 外部サービス cron-job.org から起動する構成（GitHubの`schedule:`は使わない）。
-  ジョブは`run-notify`（6時間ごと）のみ
+  ジョブは`run-notify`（1時間ごと）のみ
 
 ## セットアップ手順
 
@@ -83,7 +83,7 @@ curl -X POST \
 | Method | POST |
 | Headers | `Authorization: Bearer <PAT>` / `Accept: application/vnd.github+json` / `Content-Type: application/json` |
 | Body | `{"event_type": "run-notify"}` |
-| 実行間隔 | 6時間ごと |
+| 実行間隔 | 1時間ごと |
 
 初回既読化・テスト通知用のジョブは、普段はOFFにしておいてください。
 
@@ -99,7 +99,7 @@ curl -X POST \
 ## state管理の仕組み（`active_{provider}.json`）
 
 - 「Animephiliaのカレンダーで既に通知済み（または初回既読化済み）」なIDを保持する
-- 6時間毎チェックは、Animephiliaのカレンダーが返す**直近1週間分**のうち、
+- 1時間毎チェックは、Animephiliaのカレンダーが返す**直近1週間分**のうち、
   ここに無いIDを新着として通知する
 - 「消滅」の検知は行わない（過去カタログ全体を追わない設計のため）。一度通知した
   IDは残り続ける
