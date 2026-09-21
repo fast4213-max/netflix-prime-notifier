@@ -1,15 +1,20 @@
 # netflix-prime-notifier
 
-JustWatchの非公式APIを使い、NetflixとPrime Videoの新着タイトルをDiscordの
-別チャンネルに通知するBotです。設計の詳細は [docs/DESIGN.md](docs/DESIGN.md) を参照してください。
+NetflixとPrime Videoの新着タイトルをDiscordの別チャンネルに通知するBotです。
+設計の詳細は [docs/DESIGN.md](docs/DESIGN.md) を参照してください。
 
 - Netflix: タイトル+画像を通知
 - Prime Video: 「追加課金なしで視聴できるもの」（Prime特典のflatrate、広告つき無料視聴）のみ通知。
   レンタル/購入のみのタイトルは通知しない
 - 外部サービス cron-job.org から起動する構成（GitHubの`schedule:`は使わない）。2種類のジョブがある:
-  - **6時間ごと**（`run-notify`）: JustWatchの「新着」インデックスとの差分だけを見る軽量チェック
-  - **週次**（`weekly-catalog-check`）: プロバイダの全タイトルを取得し、6時間毎チェックの取りこぼしや
-    「配信終了→再配信」を検知する全件チェック
+  - **6時間ごと**（`run-notify`）: [Animephilia](https://animephilia.net/)の配信カレンダーが
+    返す直近1週間分のイベントとの差分を見る軽量チェック（`animephilia_client.py`）。
+    JustWatchの「新着」インデックスが実際には新着を検知できていなかったため、
+    こちらの非公開ajaxエンドポイント経由の方式に切り替えた。サイトの実装が
+    変われば壊れる前提で、壊れたら作り直す運用とする
+  - **週次**（`weekly-catalog-check`）: JustWatchからプロバイダの全タイトルを取得し、
+    6時間毎チェックの取りこぼしや「配信終了→再配信」を検知する全件チェック
+    （こちらはAnimephiliaでは代替できないため引き続きJustWatchを使う）
 
 ## 既存運用からのアップグレード手順（重要）
 
@@ -116,21 +121,27 @@ curl -X POST \
 
 | 項目 | 説明 | 初期値 |
 |---|---|---|
-| `new_titles_fetch_count` | 6時間毎の実行でJustWatchから取得する新着候補数。100件/リクエストが上限（150以上は`page too large`で拒否）だが、`offset`によるページングに対応しているため`justwatch_client.py`内で自動的に複数リクエストに分割して合算する | 300 |
 | `notify_limit_per_run` | 1回の実行あたりのDiscord送信上限（件数） | 150 |
 | `send_interval_seconds` | Discordメッセージ送信の間隔（秒） | 0.5 |
 | `discord_embeds_per_message` | 1メッセージにまとめるembed数の上限（Discordの上限は10） | 10 |
 | `rate_limit_max_retries` | 429を受けたときに`retry_after`分待って同一実行内でリトライする最大回数。超えたら残りは次回実行に持ち越す | 3 |
 | `providers.prime_video.allowed_monetization_types` | Prime Videoで通知対象とする課金種別 | `FLATRATE`, `FREE`, `ADS` |
 
-## state管理の仕組み（`active_{provider}.json`）
+## state管理の仕組み
 
-- 「現在そのプロバイダに存在すると確認済みのタイトルID」を保持する
-- 6時間毎チェック（新着インデックスとの差分）・週次チェック（全件との差分）の
-  どちらも、ここに無いIDが見つかったら「新規（または再配信）」として通知しキューに積む
-- 週次チェックだけが「前回はあったが今回は無いID」を検知して`active`から除外する。
-  そのため「配信終了→再配信」の再通知は**週次チェックの実行間隔（約1週間）の粒度**でしか
+IDの体系が異なる2つの検知経路を混ぜないよう、状態ファイルを分けている。
+
+- `active_{provider}.json`（JustWatch, tm-id）: 週次の全件チェックが使う。
+  「現在そのプロバイダに存在すると確認済みのタイトルID」を保持し、ここに無い
+  IDが見つかったら「新規（または再配信）」として通知しキューに積む。
+  「前回はあったが今回は無いID」も検知して`active`から除外するため、
+  「配信終了→再配信」の再通知は**週次チェックの実行間隔（約1週間）の粒度**でしか
   検知できない（同じ週内で消えて復活した場合は検知されない）
+- `active_animephilia_{provider}.json`（AnimephiliaのURL/タイトル+日付）:
+  6時間毎チェックが使う。Animephiliaのカレンダーが返す直近1週間分のうち、
+  ここに無いIDを新着として通知する。こちらは「消滅」を検知しないため、
+  一度通知したIDは消えない（再配信の再通知は週次チェック側の役割）
+- `queue_{provider}.json`: 検知元によらず共有する送信待ちFIFOキュー
 
 ## トラブルシューティング
 
