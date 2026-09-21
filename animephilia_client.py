@@ -31,8 +31,25 @@ _AJAX_URL = f"{_BASE_URL}/wp-admin/admin-ajax.php"
 
 # 一時的なネットワーク断や5xxで「サイト構造が変わった」旨のエラー通知が飛ぶのは
 # 誤報なので、諦める前に数回リトライする。
+#
+# GitHub Actionsのランナーからは、通常1秒程度で返るページが稀に丸ごと
+# タイムアウトする（実測: 同じコードで成功する実行と全滅する実行がある。
+# データセンタIPに対するサイト側の遮断と思われる）。リトライで待ち時間が
+# 積み上がるので、1回あたりのタイムアウトは短めにして最悪値を抑える。
+_REQUEST_TIMEOUT_SECONDS = 15
 _MAX_ATTEMPTS = 3
 _RETRY_BACKOFF_SECONDS = (2, 5)
+
+# 既定のUser-Agent(`python-httpx/x.y`)のままだと、WAFやCDNがデータセンタIPからの
+# 明らかなスクリプトアクセスとして落とすことがある。このajaxはそもそもブラウザの
+# ページ内から呼ばれる想定のエンドポイントなので、ブラウザと同じヘッダを付ける。
+_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    ),
+    "Accept-Language": "ja,en-US;q=0.9,en;q=0.8",
+}
 
 _ARRIVAL_CALENDAR_PATH = {
     "netflix": "/netflix-arrival-calendar/",
@@ -87,7 +104,12 @@ def _fetch_nonce(provider_short_name: str) -> str:
     page_path = _ARRIVAL_CALENDAR_PATH[provider_short_name]
     response = _request_with_retry(
         "Animephiliaのページ取得",
-        lambda: httpx.get(_BASE_URL + page_path, timeout=30, follow_redirects=True),
+        lambda: httpx.get(
+            _BASE_URL + page_path,
+            timeout=_REQUEST_TIMEOUT_SECONDS,
+            follow_redirects=True,
+            headers=_HEADERS,
+        ),
     )
 
     match = _NONCE_PATTERN.search(response.text)
@@ -119,7 +141,9 @@ def fetch_recent_events(provider_short_name: str) -> list[CalendarEvent]:
                 "path": page_path,
                 "nonce": nonce,
             },
-            timeout=30,
+            timeout=_REQUEST_TIMEOUT_SECONDS,
+            # ajaxはカレンダーページ内から呼ばれる前提なのでRefererも合わせる。
+            headers={**_HEADERS, "Referer": _BASE_URL + page_path},
         ),
     )
 

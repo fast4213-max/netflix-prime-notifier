@@ -29,6 +29,12 @@ concurrency:
 jobs:
   notify:
     runs-on: ubuntu-latest
+    # 取得のリトライ待ちなどで最悪でも数分。これを超えたら異常なので打ち切る。
+    timeout-minutes: 15
+    env:
+      # これが無いとPythonのprintがブロックバッファリングされ、実行中はログが
+      # 一切流れない（数分かかったとき「固まった」ようにしか見えない）。
+      PYTHONUNBUFFERED: "1"
     steps:
       - uses: actions/checkout@v4
 
