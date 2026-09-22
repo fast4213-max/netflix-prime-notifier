@@ -7,8 +7,12 @@ animephilia_client経由のこの方式に一本化した。過去のカタロ�
 突き合わせは行わず、今後の配信のみを対象とする）。
 
 エラーは発生の都度send せず、実行の最後に1通へまとめて各チャンネルへ送る。
-同じエラーが続く間は`state_manager.ERROR_COOLDOWN_HOURS`時間に1回までに
-間引く（毎時実行なので、素直に送ると1日24通×2チャンネル飛んでしまうため）。
+さらに、`state_manager.ERROR_STREAK_THRESHOLD`回連続で同じ種別のエラーが
+起きるまでは通知しない（単発のタイムアウトは次回実行で直ることが多く、
+その都度通知すると「次回実行時に再試行します」という自己解決する通知だけが
+鳴り続けるため）。通知した後も、同じエラーが続く間は
+`state_manager.ERROR_COOLDOWN_HOURS`時間に1回までに間引く
+（毎時実行なので、素直に送ると1日24通×2チャンネル飛んでしまうため）。
 """
 
 from __future__ import annotations
@@ -48,12 +52,13 @@ def broadcast_errors(config: dict, errors: list[str]) -> None:
 
     Animephiliaのサイト構造が変わった等、片方だけの問題では済まない可能性が
     ある異常は、通知チャンネルを一方しか見ていない人が気づけないことが無いよう
-    両方のチャンネルに送る。ただし同一原因のエラーはクールダウン中なら送らない。
+    両方のチャンネルに送る。ただし連続回数が`ERROR_STREAK_THRESHOLD`に満たない
+    エラーと、クールダウン中のエラーは送らない。
     """
-    # 古いエラーが二度と起きなければ`fresh`は常に空になり、以降save_error_logが
-    # 呼ばれる経路が無くなる。それだとactiveと違ってerrors.jsonだけ整理結果が
-    # 保存されず際限なく肥大化するので、エラーの有無に関わらず毎回整理・保存する。
-    error_log = state_manager.prune_error_log(state_manager.load_error_log())
+    # 今回の実行結果を反映する。今回起きなかった種別は連続が途切れたものとして
+    # ここで捨てられるので、エラーが0件でも必ず保存する（そうしないと
+    # 「連続5回目」のまま記録が残り、次に1回だけ起きたときに即通知になる）。
+    error_log = state_manager.record_error_run(state_manager.load_error_log(), errors)
 
     if not errors:
         state_manager.save_error_log(error_log)
@@ -63,7 +68,14 @@ def broadcast_errors(config: dict, errors: list[str]) -> None:
     fresh = [e for e in errors if state_manager.should_notify_error(error_log, e)]
 
     if not fresh:
-        print(f"エラー{len(errors)}件はクールダウン中のため通知を省略しました。")
+        streaks = ", ".join(
+            f"{state_manager.error_streak(error_log, e)}回目" for e in errors
+        )
+        print(
+            f"エラー{len(errors)}件は通知条件を満たさないため通知を省略しました"
+            f"（連続{streaks} / 通知は{state_manager.ERROR_STREAK_THRESHOLD}回連続から、"
+            f"通知済みなら{state_manager.ERROR_COOLDOWN_HOURS}時間のクールダウン）。"
+        )
         state_manager.save_error_log(error_log)
         return
 
@@ -74,8 +86,8 @@ def broadcast_errors(config: dict, errors: list[str]) -> None:
     if not any(marker in e for e in fresh for marker in _STRUCTURE_ERROR_MARKERS):
         hint = (
             "Animephiliaへの接続に失敗しました。サイトの構造が変わったのではなく、"
-            "一時的なネットワーク不調の可能性が高いです。通常は次回実行で自動復旧します。"
-            "何時間も続く場合はサイトの構造変化を疑ってください。"
+            "ネットワーク不調の可能性が高いです。何時間も続く場合はサイトの"
+            "構造変化を疑ってください。"
         )
     else:
         hint = (
@@ -83,8 +95,16 @@ def broadcast_errors(config: dict, errors: list[str]) -> None:
             "（Notifyワークフロー）にエラー詳細を残してあるので確認してください。"
         )
 
-    body = "\n".join(f"・{e}" for e in fresh)
-    message = f"⚠️ 新着チェックでエラーが発生しました。\n{body}\n{hint}\n次回実行時に再試行します。"
+    body = "\n".join(
+        f"・{e}（{state_manager.error_streak(error_log, e)}回連続）" for e in fresh
+    )
+    # 見出しの回数は実際の連続回数（通知後もクールダウン明けに再通知されるため、
+    # しきい値の3回とは限らない）。
+    streak = max(state_manager.error_streak(error_log, e) for e in fresh)
+    message = (
+        f"⚠️ 新着チェックが{streak}回連続で失敗しました。\n"
+        f"{body}\n{hint}\n次回実行時に再試行します。"
+    )
 
     delivered = False
     for provider_key, provider_cfg in config["providers"].items():
@@ -104,8 +124,7 @@ def broadcast_errors(config: dict, errors: list[str]) -> None:
         state_manager.save_error_log(error_log)
         return
 
-    for error in fresh:
-        error_log[error] = now
+    state_manager.mark_errors_notified(error_log, fresh, now)
     state_manager.save_error_log(error_log)
 
 
