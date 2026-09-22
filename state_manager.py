@@ -140,9 +140,12 @@ def _normalize_entry(value) -> dict | None:
 
     値が日時文字列だけの旧フォーマット（{署名: 最終通知日時}）でも、
     「通知済み」の事実は引き継ぎたいのでクールダウン記録として読み込む。
+    ただし連続回数は旧フォーマットには無いので0から数え直す。ここで
+    しきい値を入れてしまうと、旧フォーマットが残った状態で1回失敗しただけで
+    「3回連続」扱いの通知が飛んでしまう。
     """
     if isinstance(value, str):
-        return {"streak": ERROR_STREAK_THRESHOLD, "last_seen": value, "last_notified": value}
+        return {"streak": 0, "last_seen": value, "last_notified": value}
     if not isinstance(value, dict):
         return None
     streak = value.get("streak")
