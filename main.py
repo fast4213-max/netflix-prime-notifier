@@ -86,10 +86,23 @@ def broadcast_errors(config: dict, errors: list[str]) -> None:
     body = "\n".join(f"・{e}" for e in fresh)
     message = f"⚠️ 新着チェックでエラーが発生しました。\n{body}\n{hint}\n次回実行時に再試行します。"
 
+    delivered = False
     for provider_key, provider_cfg in config["providers"].items():
         webhook_url = resolve_webhook_url(provider_key, provider_cfg)
-        if webhook_url:
-            try_send_error(webhook_url, message)
+        if webhook_url and try_send_error(webhook_url, message):
+            delivered = True
+
+    # 1通も届いていないのに記録すると、`should_notify_error`が
+    # ERROR_COOLDOWN_HOURS時間ぶん「通知済み」と誤判定して沈黙する。
+    # Webhook未設定やDiscord側の障害で送れなかっただけなので、
+    # 記録せずに次回実行で送り直す。
+    if not delivered:
+        print(
+            "エラー通知をどのチャンネルにも届けられませんでした。"
+            "クールダウンには記録せず、次回実行で再送します。"
+        )
+        state_manager.save_error_log(error_log)
+        return
 
     for error in fresh:
         error_log[error] = now

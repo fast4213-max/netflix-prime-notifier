@@ -10,16 +10,22 @@ repository_dispatch (event_type=init-read) から呼ばれる想定。
 
 from __future__ import annotations
 
+import sys
+import traceback
+
 import state_manager
-from animephilia_client import AnimephiliaError, fetch_recent_events
+from animephilia_client import fetch_recent_events
 
 
 def main() -> None:
+    failed: list[str] = []
     for provider_key in ("netflix", "prime_video"):
         try:
             recent = fetch_recent_events(provider_key)
-        except AnimephiliaError as exc:
+        except Exception as exc:  # noqa: BLE001 片方の失敗で全体を止めない
             print(f"[{provider_key}] Animephilia取得エラー: {exc}")
+            traceback.print_exc()
+            failed.append(provider_key)
             continue
 
         active = state_manager.load_active(provider_key)
@@ -28,6 +34,16 @@ def main() -> None:
             active.setdefault(entry.id, now)
         state_manager.save_active(provider_key, active)
         print(f"[{provider_key}] 直近{len(recent)}件を既存登録しました（通知なし）。")
+
+    if failed:
+        # 既読化できていないプロバイダを成功扱いで放置すると、次のrun-notifyで
+        # 直近1週間分（数十件）がまるごと「新着」として一斉通知されてしまう。
+        # 必ずワークフローを赤くして、やり直すべきだと分かるようにする。
+        sys.exit(
+            f"既読登録に失敗したプロバイダ: {', '.join(failed)}。"
+            "この状態でrun-notifyを実行すると直近1週間分が一斉通知されます。"
+            "init-readをやり直してください。"
+        )
 
 
 if __name__ == "__main__":

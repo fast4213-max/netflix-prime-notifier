@@ -156,8 +156,16 @@ def drain_queue(
         state_manager.save_queue(provider_key, queue)
 
 
-def try_send_error(webhook_url: str, message: str) -> None:
+def try_send_error(webhook_url: str, message: str) -> bool:
+    """エラー通知を送る。送信できたらTrue、失敗したらログだけ出してFalseを返す。
+
+    呼び出し側は戻り値を見て「本当に届いたか」を判断すること。1通も届いて
+    いないのに送信済みとして扱うと、クールダウンで次の数時間も黙ってしまい、
+    障害に誰も気づけなくなる。
+    """
     try:
         send_error_message(webhook_url, message)
+        return True
     except Exception as exc:  # noqa: BLE001 通知自体の失敗はログのみに留める
         print(f"エラー通知の送信にも失敗しました: {exc}")
+        return False

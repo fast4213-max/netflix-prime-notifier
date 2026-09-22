@@ -38,6 +38,8 @@ _AJAX_URL = f"{_BASE_URL}/wp-admin/admin-ajax.php"
 # 積み上がるので、1回あたりのタイムアウトは短めにして最悪値を抑える。
 _REQUEST_TIMEOUT_SECONDS = 15
 _MAX_ATTEMPTS = 3
+# リトライ間の待ち時間。`_MAX_ATTEMPTS`を増やしてこの表が足りなくなっても
+# 落ちないよう、参照は`_backoff_seconds`経由にして末尾の値を使い回す。
 _RETRY_BACKOFF_SECONDS = (2, 5)
 
 # 既定のUser-Agent(`python-httpx/x.y`)のままだと、WAFやCDNがデータセンタIPからの
@@ -83,6 +85,13 @@ def _strip_tracking_params(url: str) -> str:
     return urlunsplit((parts.scheme, parts.netloc, parts.path, "", ""))
 
 
+def _backoff_seconds(attempt: int) -> float:
+    """`attempt`回目の失敗後に待つ秒数。表を超えた分は最後の値を使う。"""
+    if not _RETRY_BACKOFF_SECONDS:
+        return 0.0
+    return _RETRY_BACKOFF_SECONDS[min(attempt, len(_RETRY_BACKOFF_SECONDS) - 1)]
+
+
 def _request_with_retry(description: str, send):
     """`send()`を最大`_MAX_ATTEMPTS`回試し、全滅したらAnimephiliaErrorにする。"""
     last_exc: httpx.HTTPError | None = None
@@ -94,7 +103,7 @@ def _request_with_retry(description: str, send):
         except httpx.HTTPError as exc:
             last_exc = exc
             if attempt < _MAX_ATTEMPTS - 1:
-                wait = _RETRY_BACKOFF_SECONDS[attempt]
+                wait = _backoff_seconds(attempt)
                 print(f"{description}に失敗しました（{exc}）。{wait}秒後に再試行します。")
                 time.sleep(wait)
     raise AnimephiliaError(f"{description}に失敗しました: {last_exc}") from last_exc
