@@ -50,15 +50,21 @@ def broadcast_errors(config: dict, errors: list[str]) -> None:
     ある異常は、通知チャンネルを一方しか見ていない人が気づけないことが無いよう
     両方のチャンネルに送る。ただし同一原因のエラーはクールダウン中なら送らない。
     """
+    # 古いエラーが二度と起きなければ`fresh`は常に空になり、以降save_error_logが
+    # 呼ばれる経路が無くなる。それだとactiveと違ってerrors.jsonだけ整理結果が
+    # 保存されず際限なく肥大化するので、エラーの有無に関わらず毎回整理・保存する。
+    error_log = state_manager.prune_error_log(state_manager.load_error_log())
+
     if not errors:
+        state_manager.save_error_log(error_log)
         return
 
-    error_log = state_manager.load_error_log()
     now = state_manager.now_iso()
     fresh = [e for e in errors if state_manager.should_notify_error(error_log, e)]
 
     if not fresh:
         print(f"エラー{len(errors)}件はクールダウン中のため通知を省略しました。")
+        state_manager.save_error_log(error_log)
         return
 
     # 1件でもnonce取得失敗やレスポンス形式異常（＝実際にサイトの中身が

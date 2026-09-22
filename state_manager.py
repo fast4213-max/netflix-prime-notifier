@@ -5,7 +5,10 @@ active_*.json : {id: 検知日時(ISO8601)} - Animephiliaのカレンダーで�
                  新着候補として現れたら「新規」として通知する。
 queue_*.json  : [{id, title, image_url, detected_at}, ...] - 未送信のFIFOキュー
 errors.json   : {エラー署名: 最終通知日時(ISO8601)} - 同じエラーを毎時間
-                 通知し続けないためのクールダウン記録
+                 通知し続けないためのクールダウン記録。エラー文言には具体的な
+                 例外メッセージが含まれるため、微妙に違う原因が起きるたびに
+                 新しいキーとして増え続ける。放置すると際限なく肥大化するため
+                 `prune_error_log`でactiveと同様に定期的に整理する
 """
 
 from __future__ import annotations
@@ -23,6 +26,10 @@ ACTIVE_RETENTION_DAYS = 90
 
 # 同じ原因のエラーを何時間おきに再通知するか（毎時実行で毎回飛ぶのを防ぐ）。
 ERROR_COOLDOWN_HOURS = 6
+
+# クールダウン判定に使うだけなので、これより古いエラー記録はもう意味が無い。
+# ERROR_COOLDOWN_HOURSより十分長く取っておけば、間引き判定自体には影響しない。
+ERROR_LOG_RETENTION_DAYS = 30
 
 
 def _active_path(provider: str) -> Path:
@@ -68,22 +75,34 @@ def save_active(provider: str, active: dict[str, str]) -> None:
     _save_json(_active_path(provider), active)
 
 
-def prune_active(active: dict[str, str]) -> dict[str, str]:
-    """`ACTIVE_RETENTION_DAYS`より古い記録を落とした新しい辞書を返す。"""
-    threshold = datetime.now(timezone.utc) - timedelta(days=ACTIVE_RETENTION_DAYS)
+def _prune_by_age(data: dict[str, str], retention_days: int) -> dict[str, str]:
+    """値がISO8601日時の辞書から、`retention_days`より古いエントリを落とす。
+
+    日時が読めないものは判断できないので、安全側に倒して残す。
+    """
+    threshold = datetime.now(timezone.utc) - timedelta(days=retention_days)
     pruned: dict[str, str] = {}
-    for entry_id, detected_at in active.items():
+    for key, value in data.items():
         try:
-            seen = datetime.fromisoformat(detected_at)
+            seen = datetime.fromisoformat(value)
         except (TypeError, ValueError):
-            # 日時が読めないものは判断できないので安全側に倒して残す。
-            pruned[entry_id] = detected_at
+            pruned[key] = value
             continue
         if seen.tzinfo is None:
             seen = seen.replace(tzinfo=timezone.utc)
         if seen >= threshold:
-            pruned[entry_id] = detected_at
+            pruned[key] = value
     return pruned
+
+
+def prune_active(active: dict[str, str]) -> dict[str, str]:
+    """`ACTIVE_RETENTION_DAYS`より古い記録を落とした新しい辞書を返す。"""
+    return _prune_by_age(active, ACTIVE_RETENTION_DAYS)
+
+
+def prune_error_log(error_log: dict[str, str]) -> dict[str, str]:
+    """`ERROR_LOG_RETENTION_DAYS`より古いエラー記録を落とした新しい辞書を返す。"""
+    return _prune_by_age(error_log, ERROR_LOG_RETENTION_DAYS)
 
 
 def load_queue(provider: str) -> list[dict]:
