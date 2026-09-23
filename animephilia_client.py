@@ -163,11 +163,21 @@ def fetch_recent_events(provider_short_name: str) -> list[CalendarEvent]:
             f"Animephiliaのレスポンスがカレンダー形式ではありません: {exc}"
         ) from exc
 
+    # このエンドポイントはPHP(WordPress)の連想配列をそのままJSONにしている。
+    # PHPのjson_encodeは空配列を`{}`ではなく`[]`にするため、直近1週間の
+    # 掲載が0件の日は`[]`が返る。これを形式異常とみなすと「サイトの構造が
+    # 変わった」と誤って通知してしまうので、0件として扱う。
+    if payload == []:
+        return []
     if not isinstance(payload, dict):
         raise AnimephiliaError(f"Animephiliaのレスポンス形式が想定と異なります: {payload}")
 
     events: list[CalendarEvent] = []
     for date, items in payload.items():
+        # 同じくPHPの都合で、添字が0からの連番でない配列（途中の要素を
+        # 取り除いた後など）は`{"0": {...}, "2": {...}}`のオブジェクトになる。
+        if isinstance(items, dict):
+            items = list(items.values())
         if not isinstance(items, list):
             raise AnimephiliaError(f"Animephiliaのレスポンス形式が想定と異なります: {payload}")
         for item in items:

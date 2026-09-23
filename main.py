@@ -46,6 +46,21 @@ _STRUCTURE_ERROR_MARKERS = (
     "レスポンスがカレンダー形式ではありません",
 )
 
+# Animephiliaからの取得失敗を表すエラー文の枕詞（process_providerが付ける）。
+# 上の「構造変化」「接続不調」のヒントはこの種のエラーにだけ当てはまる。
+# Discord側の失敗（Webhook失効など）に「Animephiliaへの接続に失敗しました」と
+# 出すと、見当違いの場所を調べさせてしまう。
+_FETCH_ERROR_MARKER = "Animephiliaからの新着取得に失敗しました"
+
+# 1回きりで取り返しがつかない（その件の通知が失われる）エラーの目印。
+# 次の実行で同じエラーが再発することはないので、連続回数のしきい値を
+# 待っていると永久に通知されない。クールダウンも掛けず、起きたら即通知する。
+_IMMEDIATE_ERROR_MARKERS = ("通知を諦めました",)
+
+
+def _is_immediate_error(error: str) -> bool:
+    return any(marker in error for marker in _IMMEDIATE_ERROR_MARKERS)
+
 
 def broadcast_errors(config: dict, errors: list[str]) -> None:
     """実行中に溜まったエラーを1通にまとめ、両方のチャンネルへ送る。
@@ -53,7 +68,8 @@ def broadcast_errors(config: dict, errors: list[str]) -> None:
     Animephiliaのサイト構造が変わった等、片方だけの問題では済まない可能性が
     ある異常は、通知チャンネルを一方しか見ていない人が気づけないことが無いよう
     両方のチャンネルに送る。ただし連続回数が`ERROR_STREAK_THRESHOLD`に満たない
-    エラーと、クールダウン中のエラーは送らない。
+    エラーと、クールダウン中のエラーは送らない（Discordに拒否されて1件の通知を
+    諦めた場合など、再発しない一度きりのエラーは例外として即時に送る）。
     """
     # 今回の実行結果を反映する。今回起きなかった種別は連続が途切れたものとして
     # ここで捨てられるので、エラーが0件でも必ず保存する（そうしないと
@@ -65,7 +81,11 @@ def broadcast_errors(config: dict, errors: list[str]) -> None:
         return
 
     now = state_manager.now_iso()
-    fresh = [e for e in errors if state_manager.should_notify_error(error_log, e)]
+    fresh = [
+        e
+        for e in errors
+        if _is_immediate_error(e) or state_manager.should_notify_error(error_log, e)
+    ]
 
     if not fresh:
         streaks = ", ".join(
@@ -79,32 +99,48 @@ def broadcast_errors(config: dict, errors: list[str]) -> None:
         state_manager.save_error_log(error_log)
         return
 
-    # 1件でもnonce取得失敗やレスポンス形式異常（＝実際にサイトの中身が
-    # 変わった疑いが強いもの）が混ざっていれば構造変化を疑う文言にする。
-    # 該当が無ければ、残るのはタイムアウト/5xx等の接続層の一時的な不調
-    # なので、構造変化を疑わせる強い文言は避ける。
-    if not any(marker in e for e in fresh for marker in _STRUCTURE_ERROR_MARKERS):
-        hint = (
-            "Animephiliaへの接続に失敗しました。サイトの構造が変わったのではなく、"
-            "ネットワーク不調の可能性が高いです。何時間も続く場合はサイトの"
-            "構造変化を疑ってください。"
-        )
-    else:
-        hint = (
-            "サイトの構造が変わった可能性があります。GitHub Actionsの実行ログ"
-            "（Notifyワークフロー）にエラー詳細を残してあるので確認してください。"
+    persistent = [e for e in fresh if not _is_immediate_error(e)]
+    fetch_errors = [e for e in persistent if _FETCH_ERROR_MARKER in e]
+
+    hints: list[str] = []
+    if fetch_errors:
+        # 1件でもnonce取得失敗やレスポンス形式異常（＝実際にサイトの中身が
+        # 変わった疑いが強いもの）が混ざっていれば構造変化を疑う文言にする。
+        # 該当が無ければ、残るのはタイムアウト/5xx等の接続層の一時的な不調
+        # なので、構造変化を疑わせる強い文言は避ける。
+        if any(marker in e for e in fetch_errors for marker in _STRUCTURE_ERROR_MARKERS):
+            hints.append(
+                "サイトの構造が変わった可能性があります。GitHub Actionsの実行ログ"
+                "（Notifyワークフロー）にエラー詳細を残してあるので確認してください。"
+            )
+        else:
+            hints.append(
+                "Animephiliaへの接続に失敗しました。サイトの構造が変わったのではなく、"
+                "ネットワーク不調の可能性が高いです。何時間も続く場合はサイトの"
+                "構造変化を疑ってください。"
+            )
+    if len(fetch_errors) < len(fresh):
+        hints.append(
+            "詳細はGitHub Actionsの実行ログ（Notifyワークフロー）を確認してください。"
         )
 
-    body = "\n".join(
-        f"・{e}（{state_manager.error_streak(error_log, e)}回連続）" for e in fresh
-    )
-    # 見出しの回数は実際の連続回数（通知後もクールダウン明けに再通知されるため、
-    # しきい値の3回とは限らない）。
-    streak = max(state_manager.error_streak(error_log, e) for e in fresh)
-    message = (
-        f"⚠️ 新着チェックが{streak}回連続で失敗しました。\n"
-        f"{body}\n{hint}\n次回実行時に再試行します。"
-    )
+    def describe(e: str) -> str:
+        if _is_immediate_error(e):
+            return f"・{e}"
+        return f"・{e}（{state_manager.error_streak(error_log, e)}回連続）"
+
+    body = "\n".join(describe(e) for e in fresh)
+    if persistent:
+        # 見出しの回数は実際の連続回数（通知後もクールダウン明けに再通知されるため、
+        # しきい値の3回とは限らない）。
+        streak = max(state_manager.error_streak(error_log, e) for e in persistent)
+        headline = f"⚠️ 新着チェックが{streak}回連続で失敗しました。"
+        footer = "次回実行時に再試行します。"
+    else:
+        # 即時通知のエラーだけのときは「連続で失敗」でも「再試行」でもない。
+        headline = "⚠️ 新着の通知中にエラーが発生しました。"
+        footer = ""
+    message = "\n".join(part for part in (headline, body, *hints, footer) if part)
 
     delivered = False
     for provider_key, provider_cfg in config["providers"].items():

@@ -36,9 +36,11 @@ jobs:
       # 一切流れない（数分かかったとき「固まった」ようにしか見えない）。
       PYTHONUNBUFFERED: "1"
     steps:
-      - uses: actions/checkout@v4
+      # v4/v5はNode.js 20向けで、ランナー側で非推奨警告が出ている（Node 20は
+      # 廃止予定）。Node.js 24対応のメジャーバージョンを使う。
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
