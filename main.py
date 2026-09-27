@@ -18,7 +18,10 @@ animephilia_client経由のこの方式に一本化した。過去のカタロ�
 from __future__ import annotations
 
 import json
+import re
 import traceback
+import unicodedata
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import state_manager
@@ -164,6 +167,50 @@ def broadcast_errors(config: dict, errors: list[str]) -> None:
     state_manager.save_error_log(error_log)
 
 
+# 配信前のタイトルはAmazon等のURLがまだ無く、`{provider}:{日付}:{タイトル}`の
+# 仮IDで既読登録される（animephilia_client参照）。配信が始まってURLが付くとIDが
+# 変わり、同じタイトルが新着として二度通知されてしまう。また配信日が延期されると
+# 仮IDの日付部分が変わって、やはり二重通知になる。そこで、仮IDで既読登録済みの
+# タイトルと同じタイトルが現れたら通知せず既読にだけする。
+# 何か月も後に同名の別作品が来たときまで握りつぶさないよう、期間を区切る。
+_PROVISIONAL_MATCH_DAYS = 30
+
+# 配信後は「(字幕版)」等の版表記が後ろに付くことがあるので、照合時は落とす。
+_TRAILING_BRACKETS_RE = re.compile(r"(?:\([^()]*\))+$")
+
+
+def _normalize_title(title: str) -> str:
+    text = unicodedata.normalize("NFKC", title)
+    text = re.sub(r"\s+", "", text)
+    stripped = _TRAILING_BRACKETS_RE.sub("", text)
+    # 括弧だけのタイトルを空にしてしまわないようにする。
+    return stripped or text
+
+
+def _provisional_titles(provider_key: str, active: dict[str, str]) -> set[str]:
+    """仮IDで最近既読登録されたタイトル（正規化済み）の集合を返す。"""
+    threshold = datetime.now(timezone.utc) - timedelta(days=_PROVISIONAL_MATCH_DAYS)
+    prefix = f"{provider_key}:"
+    titles: set[str] = set()
+    for key, seen_at in active.items():
+        if not key.startswith(prefix):
+            continue
+        parts = key.split(":", 2)
+        if len(parts) != 3:
+            continue
+        try:
+            seen = datetime.fromisoformat(seen_at)
+        except (TypeError, ValueError):
+            seen = None
+        if seen is not None:
+            if seen.tzinfo is None:
+                seen = seen.replace(tzinfo=timezone.utc)
+            if seen < threshold:
+                continue
+        titles.add(_normalize_title(parts[2]))
+    return titles
+
+
 def process_provider(provider_key: str, provider_cfg: dict, config: dict) -> list[str]:
     """1プロバイダ分の新着チェックと送信を行い、エラーの説明文リストを返す。"""
     webhook_url = resolve_webhook_url(provider_key, provider_cfg)
@@ -183,11 +230,28 @@ def process_provider(provider_key: str, provider_cfg: dict, config: dict) -> lis
         return [f"[{provider_key}] Animephiliaからの新着取得に失敗しました: {exc}"] + errors
 
     now = state_manager.now_iso()
+    provisional_titles = _provisional_titles(provider_key, active)
+    queued_titles: set[str] = set()
     new_count = 0
     for entry in candidates:
         if entry.id in active:
             continue
         active[entry.id] = now
+        normalized = _normalize_title(entry.title)
+        if normalized in provisional_titles:
+            print(
+                f"[{provider_key}] 配信前に通知済みのタイトルのためスキップ: {entry.title!r}"
+            )
+            continue
+        # 同じ実行内で仮IDとURL付きの両方が返ってきた場合も1回だけにする。
+        if entry.url is None:
+            if normalized in queued_titles:
+                print(
+                    f"[{provider_key}] 同じタイトルを今回通知するためスキップ: {entry.title!r}"
+                )
+                continue
+            provisional_titles.add(normalized)
+        queued_titles.add(normalized)
         queue.append(
             {
                 "id": entry.id,
