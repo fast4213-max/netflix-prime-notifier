@@ -62,6 +62,12 @@ _ARRIVAL_CALENDAR_PATH = {
 # という形で埋め込まれているWordPressのnonce。ajax呼び出しの度に必要。
 _NONCE_PATTERN = re.compile(r'ajax_calendar\s*=\s*\{"url":"[^"]*","nonce":"([0-9a-f]+)"\}')
 
+# 配信前のアニメなどは`image`が無く、代わりに`video`へYouTubeの埋め込みURL
+# (`https://www.youtube.com/embed/<動画ID>`)だけが入っていることがある。
+_YOUTUBE_ID_PATTERN = re.compile(
+    r"(?:youtube(?:-nocookie)?\.com/(?:embed/|watch\?v=|shorts/)|youtu\.be/)([A-Za-z0-9_-]{11})"
+)
+
 
 class AnimephiliaError(Exception):
     """Animephiliaからのカレンダー取得に失敗したときに送出する。"""
@@ -83,6 +89,20 @@ def _strip_tracking_params(url: str) -> str:
     """
     parts = urlsplit(url)
     return urlunsplit((parts.scheme, parts.netloc, parts.path, "", ""))
+
+
+def _youtube_thumbnail_url(video_url: str | None) -> str | None:
+    """YouTubeの動画URLからサムネイル画像のURLを作る。
+
+    Discord Webhookのembedは動画を埋め込めないため、代わりにサムネイルを出す。
+    maxresdefaultは動画によっては存在しないので、必ずあるhqdefaultを使う。
+    """
+    if not video_url:
+        return None
+    match = _YOUTUBE_ID_PATTERN.search(video_url)
+    if not match:
+        return None
+    return f"https://i.ytimg.com/vi/{match.group(1)}/hqdefault.jpg"
 
 
 def _backoff_seconds(attempt: int) -> float:
@@ -198,7 +218,8 @@ def fetch_recent_events(provider_short_name: str) -> list[CalendarEvent]:
                     title=title,
                     start_date=item.get("start", date),
                     url=url,
-                    image_url=item.get("image") or None,
+                    image_url=item.get("image")
+                    or _youtube_thumbnail_url(item.get("video")),
                 )
             )
     return events
