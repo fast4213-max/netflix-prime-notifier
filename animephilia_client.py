@@ -95,14 +95,25 @@ def _youtube_thumbnail_url(video_url: str | None) -> str | None:
     """YouTubeの動画URLからサムネイル画像のURLを作る。
 
     Discord Webhookのembedは動画を埋め込めないため、代わりにサムネイルを出す。
-    maxresdefaultは動画によっては存在しないので、必ずあるhqdefaultを使う。
+    hqdefault/sddefaultは4:3で、16:9の動画だと上下に黒帯が入ってしまうので
+    使わない。16:9で高画質のmaxresdefaultは動画によっては存在しない(404)ため、
+    無ければ必ず存在する16:9のmqdefaultにする。
     """
     if not video_url:
         return None
     match = _YOUTUBE_ID_PATTERN.search(video_url)
     if not match:
         return None
-    return f"https://i.ytimg.com/vi/{match.group(1)}/hqdefault.jpg"
+    base = f"https://i.ytimg.com/vi/{match.group(1)}"
+    maxres = f"{base}/maxresdefault.jpg"
+    try:
+        response = httpx.head(maxres, timeout=_REQUEST_TIMEOUT_SECONDS, headers=_HEADERS)
+        if response.status_code == 200:
+            return maxres
+    except httpx.HTTPError:
+        # サムネイルの有無を確かめられないだけで通知自体は止めない。
+        pass
+    return f"{base}/mqdefault.jpg"
 
 
 def _backoff_seconds(attempt: int) -> float:
