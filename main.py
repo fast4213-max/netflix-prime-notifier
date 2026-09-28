@@ -25,7 +25,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import state_manager
-from animephilia_client import AnimephiliaError, fetch_recent_events
+from animephilia_client import AnimephiliaError, fetch_recent_events, resolve_image_url
 from queue_runner import drain_queue, try_send_error
 from webhook_config import resolve_webhook_url
 
@@ -256,7 +256,7 @@ def process_provider(provider_key: str, provider_cfg: dict, config: dict) -> lis
             {
                 "id": entry.id,
                 "title": entry.title,
-                "image_url": entry.image_url,
+                "image_url": resolve_image_url(entry),
                 "detected_at": now,
             }
         )

@@ -63,13 +63,21 @@ def drain_queue(
     max_rejected = config.get("max_rejected_per_run", 5)
     sent_count = 0
     rejected_count = 0
+    # まとめ送信が400で拒否されたあと、1件ずつ送る残り件数。
+    # 1件送れるたびにまとめ送信へ戻すと、原因の1件を含むバッチを何度も
+    # 送り直して400を重ねてしまうので、拒否されたバッチ分は1件ずつ送り切る。
+    single_remaining = 0
     errors: list[str] = []
 
     # どの経路で抜けてもキューを必ず保存する。保存し損ねると、active側には
     # 「通知済み」と記録されたまま未送信の件が消えてしまう。
     try:
         while queue and sent_count < limit:
-            chunk_size = min(embeds_per_message, limit - sent_count, len(queue))
+            if single_remaining > 0:
+                chunk_size = 1
+                single_remaining -= 1
+            else:
+                chunk_size = min(embeds_per_message, limit - sent_count, len(queue))
             chunk = queue[:chunk_size]
 
             retries = 0
@@ -98,6 +106,8 @@ def drain_queue(
                             f"[{provider_key}] Discordにまとめ送信を拒否されました（400）。"
                             "1件ずつ送り直して原因の1件を特定します。"
                         )
+                        # 先頭の1件はこのまま送り直すので、残りの件数を覚えておく。
+                        single_remaining = chunk_size - 1
                         chunk_size = 1
                         chunk = queue[:1]
                         retries = 0

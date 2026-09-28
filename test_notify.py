@@ -11,7 +11,7 @@ import sys
 import traceback
 from pathlib import Path
 
-from animephilia_client import fetch_recent_events
+from animephilia_client import fetch_recent_events, resolve_image_url
 from notifier import send_title_embed
 
 CONFIG_PATH = Path(__file__).parent / "config.json"
@@ -40,7 +40,7 @@ def main() -> None:
             candidates = fetch_recent_events(provider_key)
             if candidates:
                 title = f"[テスト通知] {candidates[0].title}"
-                image_url = candidates[0].image_url
+                image_url = resolve_image_url(candidates[0])
             else:
                 title = "テスト通知（取得は成功／直近1週間の配信は0件）"
         except Exception as exc:  # noqa: BLE001 取得が何で落ちても疎通確認は続ける

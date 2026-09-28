@@ -80,6 +80,9 @@ class CalendarEvent:
     start_date: str
     url: str | None
     image_url: str | None
+    # 画像が無いタイトルのYouTube動画URL。サムネイルの有無確認には通信が要るので、
+    # 既読のタイトルまで毎回確かめないよう`resolve_image_url`で必要な分だけ解決する。
+    video_url: str | None = None
 
 
 def _strip_tracking_params(url: str) -> str:
@@ -114,6 +117,11 @@ def _youtube_thumbnail_url(video_url: str | None) -> str | None:
         # サムネイルの有無を確かめられないだけで通知自体は止めない。
         pass
     return f"{base}/mqdefault.jpg"
+
+
+def resolve_image_url(event: CalendarEvent) -> str | None:
+    """通知に使う画像URLを返す。画像が無ければYouTubeのサムネイルで代用する。"""
+    return event.image_url or _youtube_thumbnail_url(event.video_url)
 
 
 def _backoff_seconds(attempt: int) -> float:
@@ -229,8 +237,8 @@ def fetch_recent_events(provider_short_name: str) -> list[CalendarEvent]:
                     title=title,
                     start_date=item.get("start", date),
                     url=url,
-                    image_url=item.get("image")
-                    or _youtube_thumbnail_url(item.get("video")),
+                    image_url=item.get("image") or None,
+                    video_url=item.get("video") or None,
                 )
             )
     return events
