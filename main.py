@@ -211,6 +211,44 @@ def _provisional_titles(provider_key: str, active: dict[str, str]) -> set[str]:
     return titles
 
 
+# Animephiliaのカレンダー記事は配信日だけ決まった段階で掲載し、日時が
+# タイムゾーン無しの日付だけのことがある。記事は日本向けなので日本時間で解釈する。
+_JST = timezone(timedelta(hours=9))
+
+# 配信開始から画像が付くまで少し掛かることがあるので、配信日時を過ぎてもこの期間は
+# 画像を待つ。カレンダーは配信後も1週間ほど載り続けるので、この範囲なら取りこぼさない。
+_IMAGE_WAIT_AFTER_RELEASE = timedelta(days=2)
+
+
+def _release_at(start_date: str) -> datetime | None:
+    """カレンダーの配信日時（`2026-09-27`や`2026-09-27T23:30:00+09:00`）を返す。"""
+    try:
+        released = datetime.fromisoformat(start_date)
+    except (TypeError, ValueError):
+        return None
+    if released.tzinfo is None:
+        released = released.replace(tzinfo=_JST)
+    return released
+
+
+def _should_wait_for_image(entry) -> bool:
+    """ポスター画像がまだ無く、付くのを待つべきタイトルかを返す。
+
+    配信前のタイトルは画像が無く、予告編のYouTube動画だけが載っていることが多い。
+    そのまま通知するとYouTubeのサムネイルになり、配信後に画像が付いても
+    重複防止のため通知し直されない。そこで画像が付くまでは既読にせず毎回
+    見直す。ただし配信日時から`_IMAGE_WAIT_AFTER_RELEASE`を過ぎても画像が
+    無いままなら、通知を取りこぼさないようYouTubeのサムネイル（無ければ画像なし）
+    で通知する。
+    """
+    if entry.image_url:
+        return False
+    released = _release_at(entry.start_date)
+    if released is None:
+        return False
+    return datetime.now(timezone.utc) < released + _IMAGE_WAIT_AFTER_RELEASE
+
+
 def process_provider(provider_key: str, provider_cfg: dict, config: dict) -> list[str]:
     """1プロバイダ分の新着チェックと送信を行い、エラーの説明文リストを返す。"""
     webhook_url = resolve_webhook_url(provider_key, provider_cfg)
@@ -232,12 +270,30 @@ def process_provider(provider_key: str, provider_cfg: dict, config: dict) -> lis
     now = state_manager.now_iso()
     provisional_titles = _provisional_titles(provider_key, active)
     queued_titles: set[str] = set()
+    # 画像付きで載っているタイトル。画像待ちのタイトルと同じものが画像付きでも
+    # 載っていれば、そちらで通知される（または通知済み）ので待つ必要が無い。
+    titles_with_image = {_normalize_title(e.title) for e in candidates if e.image_url}
     new_count = 0
+    waiting_count = 0
     for entry in candidates:
         if entry.id in active:
             continue
-        active[entry.id] = now
         normalized = _normalize_title(entry.title)
+        if not entry.image_url and normalized in titles_with_image:
+            active[entry.id] = now
+            print(
+                f"[{provider_key}] 画像付きの同じタイトルがあるためスキップ: {entry.title!r}"
+            )
+            continue
+        if _should_wait_for_image(entry):
+            # 既読にしないので、次回以降の実行で画像が付いていれば通知される。
+            waiting_count += 1
+            print(
+                f"[{provider_key}] 画像が付くまで通知を保留: {entry.title!r}"
+                f"（配信日時 {entry.start_date}）"
+            )
+            continue
+        active[entry.id] = now
         if normalized in provisional_titles:
             print(
                 f"[{provider_key}] 配信前に通知済みのタイトルのためスキップ: {entry.title!r}"
@@ -263,8 +319,8 @@ def process_provider(provider_key: str, provider_cfg: dict, config: dict) -> lis
         new_count += 1
 
     print(
-        f"[{provider_key}] 候補{len(candidates)}件中、新着{new_count}件を検知。"
-        f"送信待ちキュー: {len(queue)}件"
+        f"[{provider_key}] 候補{len(candidates)}件中、新着{new_count}件を検知"
+        f"（画像待ちで保留{waiting_count}件）。送信待ちキュー: {len(queue)}件"
     )
 
     # 保存前に古い記録を落とす。カレンダーが返すのは直近1週間分なので、
