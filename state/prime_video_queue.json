@@ -1,1 +1,32 @@
-[]
+[
+  {
+    "detected_at": "2026-09-30T22:00:49.388810+00:00",
+    "id": "https://www.amazon.co.jp/gp/video/detail/B0GY8RRBNZ",
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/e3386d22905e79abf7d4b2eb1823a78716013b0233df8755b972b70642351bdb._UR1920,1080_SX480_FMjpg_.jpg",
+    "title": "自分に見合った顔"
+  },
+  {
+    "detected_at": "2026-09-30T22:00:49.388810+00:00",
+    "id": "https://www.amazon.co.jp/gp/video/detail/B0G7LB5S9M",
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/16288e13b07ffb7cdf39fc94e3f58b31b80349b6b9a7d60e7e35bab8479d848c._UR1920,1080_SX480_FMjpg_.jpg",
+    "title": "認知症と生きる希望の処方箋"
+  },
+  {
+    "detected_at": "2026-09-30T22:00:49.388810+00:00",
+    "id": "https://www.amazon.co.jp/gp/video/detail/B0HKLQBNYX",
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/eb1119a77cac6320e29e3a9965c2ab28d2f419083627d4d6bdf39cbc15289639._UR1920,1080_SX480_FMjpg_.jpg",
+    "title": "連続テレビ小説 あんぱん 特別編"
+  },
+  {
+    "detected_at": "2026-09-30T22:00:49.388810+00:00",
+    "id": "https://www.amazon.co.jp/gp/video/detail/B0FQJB8QVW",
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/0afc58fd0db9cba068d18d89195d9b3788107ee255590ac20381cd9224a58a1a._UR1920,1080_SX480_FMjpg_.jpg",
+    "title": "魔法少女育成計画"
+  },
+  {
+    "detected_at": "2026-09-30T22:00:49.388810+00:00",
+    "id": "https://www.amazon.co.jp/gp/video/detail/B0HJ3R7F46",
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/744b8607ca472a67bd8b401728c9004dd2ea4a6d70d00a1eb8ec5b995e0325f9._UR1920,1080_SX480_FMjpg_.jpg",
+    "title": "転生貴族、鑑定スキルで成り上がる 第3期"
+  }
+]
