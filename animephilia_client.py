@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import re
 import time
+from datetime import datetime, timedelta, timezone
 from dataclasses import dataclass
 from urllib.parse import urlsplit, urlunsplit
 
@@ -211,6 +212,11 @@ def fetch_recent_events(provider_short_name: str) -> list[CalendarEvent]:
     if not isinstance(payload, dict):
         raise AnimephiliaError(f"Animephiliaのレスポンス形式が想定と異なります: {payload}")
 
+    # アニメ版ページは「今日から約1か月先までの配信予定」を返す（実機確認済み）。
+    # 未来の予定まで通知すると一気に大量通知されるため、配信日が今日（日本時間）
+    # までのものだけを対象にする。未来分は配信日が来た時点で新着として通知される。
+    today_jst = datetime.now(timezone(timedelta(hours=9))).date().isoformat()
+
     events: list[CalendarEvent] = []
     for date, items in payload.items():
         # 同じくPHPの都合で、添字が0からの連番でない配列（途中の要素を
@@ -226,6 +232,8 @@ def fetch_recent_events(provider_short_name: str) -> list[CalendarEvent]:
                 )
             title = item.get("title")
             if not title:
+                continue
+            if str(item.get("start", date))[:10] > today_jst:
                 continue
             raw_url = item.get("url") or None
             url = _strip_tracking_params(raw_url) if raw_url else None
