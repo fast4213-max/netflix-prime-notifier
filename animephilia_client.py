@@ -2,8 +2,8 @@
 
 JustWatchの`newTitles`インデックスが新着を検知できていない疑いがあるため、
 1時間毎の新着チェックはこちらに置き換える。Animephiliaの「新着・配信予定
-カレンダー」ページ（アニメに限らずNetflix/Prime Videoの全ジャンルを扱う方の
-ページ）が使っているWordPress管理者向けajaxの内部エンドポイント
+カレンダー」ページのうち、アニメだけを扱う方のページ（通知がうるさくなるため
+全ジャンル版は使わない）が使っているWordPress管理者向けajaxの内部エンドポイント
 (`get_svod_calendar_events`)を直接叩く。
 
 これは非公開の内部APIであり、サイトの実装が変わればいつ壊れてもおかしくない
@@ -54,8 +54,8 @@ _HEADERS = {
 }
 
 _ARRIVAL_CALENDAR_PATH = {
-    "netflix": "/netflix-arrival-calendar/",
-    "prime_video": "/amazon-prime-video-arrival-calendar/",
+    "netflix": "/netflix-new-animes-calendar/",
+    "prime_video": "/amazon-prime-video-new-animes-calendar/",
 }
 
 # ページのインラインスクリプトに `ajax_calendar = {"url":"...","nonce":"..."}`
@@ -185,7 +185,7 @@ def fetch_recent_events(provider_short_name: str) -> list[CalendarEvent]:
                 "action": "get_svod_calendar_events",
                 "service": provider_short_name,
                 "type": "new",
-                "genre": "all",
+                "genre": "anime",
                 "path": page_path,
                 "nonce": nonce,
             },

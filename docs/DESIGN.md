@@ -12,7 +12,7 @@ Discordの別チャンネルへ通知するBotの設計書。
 | 情報源 | animephilia.net の配信カレンダー（非公開ajax） |
 | 検知範囲 | 当日を含む直近7日分（サイト側のAPI仕様） |
 | 実行間隔 | 1時間毎（cron-job.org → repository_dispatch） |
-| 対象ジャンル | 全ジャンル（映画・シリーズ・ドラマ等。アニメ限定ではない） |
+| 対象ジャンル | アニメのみ（全ジャンル版は通知が多すぎるため不使用） |
 | 通知先 | Discord Webhook × 2（Netflix用 / Prime Video用） |
 
 ---
@@ -56,8 +56,8 @@ POST https://animephilia.net/wp-admin/admin-ajax.php
   action=get_svod_calendar_events
   service=netflix | prime_video
   type=new
-  genre=all
-  path=<記事のURLパス>     # /netflix-arrival-calendar/ | /amazon-prime-video-arrival-calendar/
+  genre=anime
+  path=<記事のURLパス>     # /netflix-new-animes-calendar/ | /amazon-prime-video-new-animes-calendar/
   nonce=<ページ本文の`ajax_calendar`変数から正規表現で抽出>
 
 → {"2026-09-15": [{title, start, url, region, kind, genres, image, tags?}, ...], ...}
@@ -70,7 +70,7 @@ nonceはajax呼び出しの度に必要なため、毎回カレンダーペー�
 
 - **当日を含む直近7日分のローリングウィンドウ**を返す。固定の暦週グリッドではない
   （2026-09-21に叩くと 09-15〜09-21、翌日は 09-16〜09-22）
-- `genre=all` により、アニメに限らず映画・国内外ドラマ等すべてのジャンルが対象
+- `genre=anime` により、アニメだけが対象
 - **配信日が未来のタイトルは含まれない**（`type=new`のため）。`path`に
   `/month/YYYY/MM/`を付ければ任意月が取れるが、未確定で`url`/`image`が空の
   ことがあるため**使用しない**
