@@ -26,7 +26,12 @@ from pathlib import Path
 
 import cross_match
 import state_manager
-from animephilia_client import AnimephiliaError, fetch_recent_events, resolve_image_url
+from animephilia_client import (
+    AnimephiliaError,
+    fallback_url,
+    fetch_recent_events,
+    resolve_image_url,
+)
 from queue_runner import drain_queue, try_send_error
 from webhook_config import resolve_webhook_url
 
@@ -321,7 +326,8 @@ def process_provider(provider_key: str, provider_cfg: dict, config: dict) -> lis
                 "id": entry.id,
                 "title": entry.title,
                 "image_url": resolve_image_url(entry),
-                "url": entry.url,
+                # 配信前でURLが無いタイトルは、カレンダーのページへのリンクで代用する。
+                "url": entry.url or fallback_url(provider_key),
                 "detected_at": now,
             }
         )

@@ -130,6 +130,12 @@ def resolve_image_url(event: CalendarEvent) -> str | None:
     return pick_image_url(event.image_url, event.video_url)
 
 
+def fallback_url(provider_short_name: str) -> str | None:
+    """作品個別のURLがまだ無いときの代替リンク（Animephiliaの新着カレンダー）。"""
+    page_path = _ARRIVAL_CALENDAR_PATH.get(provider_short_name)
+    return _BASE_URL + page_path if page_path else None
+
+
 def _backoff_seconds(attempt: int) -> float:
     """`attempt`回目の失敗後に待つ秒数。表を超えた分は最後の値を使う。"""
     if not _RETRY_BACKOFF_SECONDS:
