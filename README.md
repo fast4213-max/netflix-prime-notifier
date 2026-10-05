@@ -77,7 +77,7 @@ curl -X POST \
 
 NetflixとPrime Videoの両方で配信されているタイトルを専用チャンネルへ通知する機能です
 （設計: [docs/DESIGN_CROSS.md](docs/DESIGN_CROSS.md)）。`DISCORD_WEBHOOK_CROSS` を登録したら、
-`event_type: "init-cross"` を1回実行してください。過去30日分を取り込み、すでに両方で
+`event_type: "init-cross"` を1回実行してください。過去1年分（取得できる範囲）を取り込み、すでに両方で
 配信中の作品を一度だけまとめて通知します（通知済みは記録されるので、やり直しても
 二重通知にはなりません）。以降は毎時の `run-notify` が自動で突き合わせます。
 通知タイトルのリンクはNetflixです。

@@ -47,6 +47,12 @@ def _retention_days(window_days: int) -> int:
     return window_days + 1
 
 
+def _notified_retention_days(window_days: int) -> int:
+    # 通知済みの記録はカタログより長く持つ。先に消えると、カタログに残っている
+    # 作品が再び「未通知」に見えて二重通知になる。
+    return _retention_days(window_days) + 90
+
+
 def _release_iso(start_date: str) -> str:
     return (start_date or "")[:10]
 
@@ -126,7 +132,9 @@ def find_new_matches(window_days: int) -> list[dict]:
     prime = state_manager.prune_catalog(
         state_manager.load_catalog("prime_video"), _retention_days(window_days)
     )
-    notified = state_manager.prune_active(state_manager.load_cross_notified())
+    notified = state_manager.prune_by_age(
+        state_manager.load_cross_notified(), _notified_retention_days(window_days)
+    )
     now = state_manager.now_iso()
 
     items: list[dict] = []

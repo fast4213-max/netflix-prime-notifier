@@ -90,7 +90,7 @@ def save_active(provider: str, active: dict[str, str]) -> None:
     _save_json(_active_path(provider), active)
 
 
-def _prune_by_age(data: dict[str, str], retention_days: int) -> dict[str, str]:
+def prune_by_age(data: dict[str, str], retention_days: int) -> dict[str, str]:
     """値がISO8601日時の辞書から、`retention_days`より古いエントリを落とす。
 
     日時が読めないものは判断できないので、安全側に倒して残す。
@@ -112,7 +112,7 @@ def _prune_by_age(data: dict[str, str], retention_days: int) -> dict[str, str]:
 
 def prune_active(active: dict[str, str]) -> dict[str, str]:
     """`ACTIVE_RETENTION_DAYS`より古い記録を落とした新しい辞書を返す。"""
-    return _prune_by_age(active, ACTIVE_RETENTION_DAYS)
+    return prune_by_age(active, ACTIVE_RETENTION_DAYS)
 
 
 def _catalog_path(provider: str) -> Path:
@@ -136,7 +136,7 @@ def save_catalog(provider: str, catalog: dict[str, dict]) -> None:
 def prune_catalog(catalog: dict[str, dict], retention_days: int) -> dict[str, dict]:
     """`seen_at`が`retention_days`より古いエントリを落とした新しい辞書を返す。"""
     seen = {k: v.get("seen_at") for k, v in catalog.items() if isinstance(v, dict)}
-    kept = _prune_by_age(seen, retention_days)
+    kept = prune_by_age(seen, retention_days)
     return {k: catalog[k] for k in kept}
 
 
