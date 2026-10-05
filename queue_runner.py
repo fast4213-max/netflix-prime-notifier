@@ -23,18 +23,27 @@ from notifier import (
 )
 
 
-def _chunk_items(chunk: list[dict]) -> list[tuple[str, str | None]]:
-    """キューの要素からembed用の(title, image_url)を組み立てる。
+def _chunk_items(chunk: list[dict]) -> list[tuple]:
+    """キューの要素からembed用の(title, image_url, url, description)を組み立てる。
+
+    url/descriptionは重複配信通知のキューだけが持つ（通常の新着は付けない）。
 
     古い形式のstateなどでキーが欠けていても例外で落とさない
     （落とすとキューが保存されないまま実行が終わり、active側には
     「通知済み」として記録済みの件が永久に失われるため）。
     """
-    items: list[tuple[str, str | None]] = []
+    items: list[tuple] = []
     for item in chunk:
         if not isinstance(item, dict):
             continue
-        items.append((item.get("title") or "(タイトル不明)", item.get("image_url")))
+        items.append(
+            (
+                item.get("title") or "(タイトル不明)",
+                item.get("image_url"),
+                item.get("url"),
+                item.get("description"),
+            )
+        )
     return items
 
 

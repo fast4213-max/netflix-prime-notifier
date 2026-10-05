@@ -12,7 +12,7 @@ import traceback
 from pathlib import Path
 
 from animephilia_client import fetch_recent_events, resolve_image_url
-from notifier import send_title_embed
+from notifier import send_title_embed, send_title_embeds
 
 CONFIG_PATH = Path(__file__).parent / "config.json"
 
@@ -57,6 +57,30 @@ def main() -> None:
             failed.append(provider_key)
             continue
         print(f"[{provider_key}] 試験通知を送信しました: {title}")
+
+    # 重複配信通知用チャンネル（Netflixリンク付きの見た目を確認する）。
+    cross_cfg = config.get("cross")
+    cross_webhook = os.environ.get(cross_cfg["webhook_env"]) if cross_cfg else None
+    if cross_cfg and not cross_webhook:
+        print(f"[cross] 環境変数 {cross_cfg['webhook_env']} が未設定のためスキップ")
+    elif cross_webhook:
+        try:
+            send_title_embeds(
+                cross_webhook,
+                [
+                    (
+                        "[テスト通知] 重複配信",
+                        None,
+                        "https://www.netflix.com/",
+                        "Netflix・Prime Video の両方で配信中です。Netflixで見られます。",
+                    )
+                ],
+            )
+            print("[cross] 試験通知を送信しました")
+        except Exception as exc:  # noqa: BLE001 全チャンネルを試し切るため握る
+            print(f"[cross] 試験通知の送信に失敗しました: {exc}")
+            traceback.print_exc()
+            failed.append("cross")
 
     if failed:
         # 疎通確認が目的なので、失敗はワークフローを赤くして気づけるようにする。

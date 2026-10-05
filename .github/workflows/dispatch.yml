@@ -2,17 +2,18 @@ name: Notify
 
 on:
   repository_dispatch:
-    types: [run-notify, init-read, test-notify]
+    types: [run-notify, init-read, init-cross, test-notify]
   workflow_dispatch:
     inputs:
       event_type:
-        description: "run-notify / init-read / test-notify"
+        description: "run-notify / init-read / init-cross / test-notify"
         required: true
         default: "test-notify"
         type: choice
         options:
           - run-notify
           - init-read
+          - init-cross
           - test-notify
 
 permissions:
@@ -50,6 +51,7 @@ jobs:
         env:
           DISCORD_WEBHOOK_NETFLIX: ${{ secrets.DISCORD_WEBHOOK_NETFLIX }}
           DISCORD_WEBHOOK_PRIME: ${{ secrets.DISCORD_WEBHOOK_PRIME }}
+          DISCORD_WEBHOOK_CROSS: ${{ secrets.DISCORD_WEBHOOK_CROSS }}
           EVENT_TYPE: ${{ github.event.action || github.event.inputs.event_type }}
         run: |
           echo "event_type: $EVENT_TYPE"
@@ -59,6 +61,9 @@ jobs:
               ;;
             init-read)
               python init_read.py
+              ;;
+            init-cross)
+              python init_cross.py
               ;;
             test-notify)
               python test_notify.py

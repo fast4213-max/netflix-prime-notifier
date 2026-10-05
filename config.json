@@ -11,5 +11,9 @@
     "prime_video": {
       "webhook_env": "DISCORD_WEBHOOK_PRIME"
     }
+  },
+  "cross": {
+    "webhook_env": "DISCORD_WEBHOOK_CROSS",
+    "window_days": 30
   }
 }

@@ -24,6 +24,7 @@ import unicodedata
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import cross_match
 import state_manager
 from animephilia_client import AnimephiliaError, fetch_recent_events, resolve_image_url
 from queue_runner import drain_queue, try_send_error
@@ -267,6 +268,13 @@ def process_provider(provider_key: str, provider_cfg: dict, config: dict) -> lis
         errors = drain_queue(provider_key, webhook_url, queue, config)
         return [f"[{provider_key}] Animephiliaからの新着取得に失敗しました: {exc}"] + errors
 
+    # 重複配信の突き合わせ用に、見えたタイトルは通知の有無と無関係に全部記録する。
+    cross_match.register_events(
+        provider_key,
+        candidates,
+        window_days=config.get("cross", {}).get("window_days", 30),
+    )
+
     now = state_manager.now_iso()
     provisional_titles = _provisional_titles(provider_key, active)
     queued_titles: set[str] = set()
@@ -345,6 +353,14 @@ def main() -> None:
             print(f"[{provider_key}] 想定外のエラーが発生しました:")
             traceback.print_exc()
             errors.append(f"[{provider_key}] 想定外のエラーが発生しました: {exc}")
+
+    # 両プロバイダの取得が済んだ後で、Netflix×Prime Videoの重複配信を突き合わせる。
+    try:
+        errors.extend(cross_match.process(config))
+    except Exception as exc:  # noqa: BLE001 重複通知の失敗で新着通知のエラー集約まで止めない
+        print("[cross] 想定外のエラーが発生しました:")
+        traceback.print_exc()
+        errors.append(f"[cross] 想定外のエラーが発生しました: {exc}")
 
     broadcast_errors(config, errors)
 

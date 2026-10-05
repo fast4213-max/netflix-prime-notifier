@@ -37,6 +37,7 @@ Discordの各チャンネルで「連携サービスを編集」→「Webhookを
 |---|---|
 | `DISCORD_WEBHOOK_NETFLIX` | Netflixチャンネルへの通知用Webhook URL |
 | `DISCORD_WEBHOOK_PRIME` | Prime Videoチャンネルへの通知用Webhook URL |
+| `DISCORD_WEBHOOK_CROSS` | 重複配信（NetflixとPrime Videoの両方で配信）チャンネル用Webhook URL |
 
 未設定の場合、該当プロバイダの処理はスキップされ、ログにその旨が出力されます
 （Discordへのエラー通知はWebhook自体が無いため送れません）。
@@ -71,6 +72,15 @@ curl -X POST \
 ```
 
 実行後、`state/*_active.json` に直近1週間分のIDが登録されていればOKです。
+
+#### 4b. 重複配信通知の導入（一度だけ）
+
+NetflixとPrime Videoの両方で配信されているタイトルを専用チャンネルへ通知する機能です
+（設計: [docs/DESIGN_CROSS.md](docs/DESIGN_CROSS.md)）。`DISCORD_WEBHOOK_CROSS` を登録したら、
+`event_type: "init-cross"` を1回実行してください。過去30日分を取り込み、すでに両方で
+配信中の作品を一度だけまとめて通知します（通知済みは記録されるので、やり直しても
+二重通知にはなりません）。以降は毎時の `run-notify` が自動で突き合わせます。
+通知タイトルのリンクはNetflixです。
 
 ### 5. 試験通知で見た目を確認
 

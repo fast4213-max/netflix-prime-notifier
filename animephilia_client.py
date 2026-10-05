@@ -120,9 +120,14 @@ def _youtube_thumbnail_url(video_url: str | None) -> str | None:
     return f"{base}/mqdefault.jpg"
 
 
+def pick_image_url(image_url: str | None, video_url: str | None) -> str | None:
+    """画像URLを返す。画像が無ければYouTubeのサムネイルで代用する。"""
+    return image_url or _youtube_thumbnail_url(video_url)
+
+
 def resolve_image_url(event: CalendarEvent) -> str | None:
     """通知に使う画像URLを返す。画像が無ければYouTubeのサムネイルで代用する。"""
-    return event.image_url or _youtube_thumbnail_url(event.video_url)
+    return pick_image_url(event.image_url, event.video_url)
 
 
 def _backoff_seconds(attempt: int) -> float:
@@ -175,8 +180,22 @@ def fetch_recent_events(provider_short_name: str) -> list[CalendarEvent]:
 
     provider_short_name: "netflix" または "prime_video"
     """
+    return _fetch_calendar(provider_short_name, "")
+
+
+def fetch_month_events(provider_short_name: str, year: int, month: int) -> list[CalendarEvent]:
+    """指定月の（配信日が今日以前の）イベントを取得する。
+
+    過去分の初期投入用。月別ページは配信日が未確定のタイトルで`url`/`image`が
+    空のことがあるため、通常の新着検知（`fetch_recent_events`）には使わない。
+    """
+    return _fetch_calendar(provider_short_name, f"month/{year:04d}/{month:02d}/")
+
+
+def _fetch_calendar(provider_short_name: str, path_suffix: str) -> list[CalendarEvent]:
     page_path = _ARRIVAL_CALENDAR_PATH[provider_short_name]
     nonce = _fetch_nonce(provider_short_name)
+    ajax_path = page_path + path_suffix
 
     response = _request_with_retry(
         "Animephiliaのカレンダー取得",
@@ -187,7 +206,7 @@ def fetch_recent_events(provider_short_name: str) -> list[CalendarEvent]:
                 "service": provider_short_name,
                 "type": "new",
                 "genre": "anime",
-                "path": page_path,
+                "path": ajax_path,
                 "nonce": nonce,
             },
             timeout=_REQUEST_TIMEOUT_SECONDS,

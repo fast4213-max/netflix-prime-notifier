@@ -115,6 +115,41 @@ def prune_active(active: dict[str, str]) -> dict[str, str]:
     return _prune_by_age(active, ACTIVE_RETENTION_DAYS)
 
 
+def _catalog_path(provider: str) -> Path:
+    return STATE_DIR / f"catalog_{provider}.json"
+
+
+def _cross_notified_path() -> Path:
+    return STATE_DIR / "cross_notified.json"
+
+
+def load_catalog(provider: str) -> dict[str, dict]:
+    """重複配信の突き合わせ用カタログ: {照合キー: {title, release, url, image_url, video_url, seen_at}}"""
+    data = _load_json(_catalog_path(provider), {})
+    return data if isinstance(data, dict) else {}
+
+
+def save_catalog(provider: str, catalog: dict[str, dict]) -> None:
+    _save_json(_catalog_path(provider), catalog)
+
+
+def prune_catalog(catalog: dict[str, dict], retention_days: int) -> dict[str, dict]:
+    """`seen_at`が`retention_days`より古いエントリを落とした新しい辞書を返す。"""
+    seen = {k: v.get("seen_at") for k, v in catalog.items() if isinstance(v, dict)}
+    kept = _prune_by_age(seen, retention_days)
+    return {k: catalog[k] for k in kept}
+
+
+def load_cross_notified() -> dict[str, str]:
+    """重複配信を通知済みの照合キー: {照合キー: 通知日時}"""
+    data = _load_json(_cross_notified_path(), {})
+    return data if isinstance(data, dict) else {}
+
+
+def save_cross_notified(notified: dict[str, str]) -> None:
+    _save_json(_cross_notified_path(), notified)
+
+
 def load_queue(provider: str) -> list[dict]:
     data = _load_json(_queue_path(provider), [])
     return data if isinstance(data, list) else []

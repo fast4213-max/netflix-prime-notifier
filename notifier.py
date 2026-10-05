@@ -7,6 +7,7 @@ import requests
 # Discordの制限値。超えると400 Bad Requestが返る。
 MAX_EMBEDS_PER_MESSAGE = 10
 MAX_EMBED_TITLE_LENGTH = 256
+MAX_EMBED_DESCRIPTION_LENGTH = 4096
 MAX_CONTENT_LENGTH = 2000
 
 
@@ -77,8 +78,13 @@ def send_title_embed(webhook_url: str, title: str, image_url: str | None) -> Non
     send_title_embeds(webhook_url, [(title, image_url)])
 
 
-def send_title_embeds(webhook_url: str, items: list[tuple[str, str | None]]) -> None:
-    """複数件のタイトル+画像を1メッセージにまとめて送信する。
+# 1件分のembed内容。(title, image_url) か、リンク付きの
+# (title, image_url, url, description) のどちらでもよい。
+EmbedItem = tuple
+
+
+def send_title_embeds(webhook_url: str, items: list[EmbedItem]) -> None:
+    """複数件のタイトル+画像（任意でリンク・説明文）を1メッセージにまとめて送信する。
 
     1回の呼び出しで1メッセージだけ送る。Discordの1メッセージあたりのembed上限は
     `MAX_EMBEDS_PER_MESSAGE`個のため、呼び出し側でそれ以下に区切ってから呼ぶこと。
@@ -100,8 +106,15 @@ def send_title_embeds(webhook_url: str, items: list[tuple[str, str | None]]) -> 
             f"（{len(items)}件渡されました）"
         )
     embeds = []
-    for title, image_url in items:
+    for title, image_url, *extra in items:
+        url = extra[0] if len(extra) > 0 else None
+        description = extra[1] if len(extra) > 1 else None
         embed: dict = {"title": _sanitize_title(title)}
+        sanitized_url = _sanitize_image_url(url)  # http(s)のみ通す
+        if sanitized_url:
+            embed["url"] = sanitized_url
+        if description:
+            embed["description"] = description[:MAX_EMBED_DESCRIPTION_LENGTH]
         sanitized_image = _sanitize_image_url(image_url)
         if sanitized_image:
             embed["image"] = {"url": sanitized_image}
