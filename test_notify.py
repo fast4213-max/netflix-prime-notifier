@@ -72,7 +72,7 @@ def main() -> None:
                         "[テスト通知] 重複配信",
                         None,
                         "https://www.netflix.com/",
-                        "Netflix・Prime Video の両方で配信中です。Netflixで見られます。",
+                        "Netflix: 2026-10-03 / Prime Video: 2026-10-03",
                     )
                 ],
             )

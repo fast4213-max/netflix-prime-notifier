@@ -114,7 +114,6 @@ def seed_seen_at(events: list[CalendarEvent]) -> dict[str, str]:
 
 def _describe(netflix: dict, prime: dict) -> str:
     return (
-        "Netflix・Prime Video の両方で配信中です。Netflixで見られます。\n"
         f"Netflix: {netflix.get('release') or '不明'} / "
         f"Prime Video: {prime.get('release') or '不明'}"
     )
