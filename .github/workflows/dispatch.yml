@@ -96,7 +96,10 @@ jobs:
               exit 0
             fi
             echo "push failed (attempt $attempt). rebasing and retrying..."
-            git pull --rebase --autostash origin "$(git rev-parse --abbrev-ref HEAD)" || true
+            # stateは直前の実行結果が最新なので、競合したらこちらの内容を優先する。
+            # それでも失敗したらrebaseを中断して、中途半端な状態を残さない。
+            git pull --rebase -X theirs --autostash origin "$(git rev-parse --abbrev-ref HEAD)" \
+              || git rebase --abort || true
             sleep $((attempt * 3))
           done
           echo "::error::Failed to push state changes after 5 attempts."

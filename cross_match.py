@@ -119,11 +119,12 @@ def _describe(netflix: dict, prime: dict) -> str:
     )
 
 
-def find_new_matches(window_days: int) -> list[dict]:
+def find_new_matches(window_days: int) -> tuple[list[dict], dict[str, str]]:
     """両方のカタログにあって未通知の作品を、キュー用の要素にして返す。
 
-    通知済みの記録はここで更新・保存する（キューに積んだ時点で既読扱い。
-    未送信分はキューに残り、次回実行で送られる）。
+    あわせて、今回分を足した通知済みの記録も返す。保存は呼び出し側が
+    キューを保存した後に行うこと（先に通知済みだけ保存して落ちると、
+    キューに積んでいない作品が通知されないまま既読扱いになる）。
     """
     netflix = state_manager.prune_catalog(
         state_manager.load_catalog("netflix"), _retention_days(window_days)
@@ -155,8 +156,7 @@ def find_new_matches(window_days: int) -> list[dict]:
             }
         )
         notified[key] = now
-    state_manager.save_cross_notified(notified)
-    return items
+    return items, notified
 
 
 def process(config: dict) -> list[str]:
@@ -171,9 +171,11 @@ def process(config: dict) -> list[str]:
         return []
 
     queue = state_manager.load_queue(CROSS_KEY)
-    # 先にキューへ積んでから通知済みを保存する。drain_queueはどの経路でも
+    # 先にキューを保存してから通知済みを保存する。drain_queueはどの経路でも
     # キューを保存するので、積んだ分が通知済みだけ記録されて消えることはない。
-    queue.extend(find_new_matches(cross_cfg.get("window_days", 30)))
+    items, notified = find_new_matches(cross_cfg.get("window_days", 30))
+    queue.extend(items)
     state_manager.save_queue(CROSS_KEY, queue)
+    state_manager.save_cross_notified(notified)
     print(f"[{CROSS_KEY}] 重複配信の送信待ち: {len(queue)}件")
     return drain_queue(CROSS_KEY, webhook_url, queue, config)
