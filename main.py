@@ -321,6 +321,7 @@ def process_provider(provider_key: str, provider_cfg: dict, config: dict) -> lis
                 "id": entry.id,
                 "title": entry.title,
                 "image_url": resolve_image_url(entry),
+                "url": entry.url,
                 "detected_at": now,
             }
         )

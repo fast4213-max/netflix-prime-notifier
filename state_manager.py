@@ -3,7 +3,7 @@
 active_*.json : {id: 検知日時(ISO8601)} - Animephiliaのカレンダーで既に通知済み
                  （または初回既読化済み）のタイトルID一覧。ここに無いIDが
                  新着候補として現れたら「新規」として通知する。
-queue_*.json  : [{id, title, image_url, detected_at}, ...] - 未送信のFIFOキュー
+queue_*.json  : [{id, title, image_url, url, detected_at}, ...] - 未送信のFIFOキュー
 errors.json   : {エラー種別キー: {streak, last_seen, last_notified}} - 一時的な
                  不調で毎回通知が飛ばないよう、「何回連続で同じ種別のエラーが
                  起きたか」と「最後に通知した日時」を記録する。エラー文言には
