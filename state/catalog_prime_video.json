@@ -1144,11 +1144,11 @@
     "video_url": null
   },
   "ブラッククローバー2ndseason": {
-    "image_url": null,
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/854fc043285532e7a73f1e9f41c99e403d433c9a6e01ff681eedaa9474ff1a6d._UR1920,1080_SX480_FMjpg_.png",
     "release": "2026-10-08",
     "seen_at": "2026-10-07T22:00:49.710959+00:00",
     "title": "ブラッククローバー 2nd Season",
-    "url": null,
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H94CVDXJ",
     "video_url": "https://www.youtube.com/embed/4MYo8FfiXMA"
   },
   "プラノサウルスガチコセイブツ部": {
@@ -1357,6 +1357,14 @@
     "seen_at": "2026-09-30T15:00:00+00:00",
     "title": "ラグラッツ ムービー (字幕版)",
     "url": "https://www.amazon.co.jp/gp/video/detail/B0GZ7JTVRJ",
+    "video_url": null
+  },
+  "リッスン♪リッスンhelloenglish": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/a527dd205bd97a8e62c76b42102f316555f9a864349aaedea3262a2ccd848d90._UR1920,1080_SX480_FMjpg_.jpg",
+    "release": "2026-10-08",
+    "seen_at": "2026-10-08T05:00:52.496056+00:00",
+    "title": "リッスン♪リッスン Hello English!",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HKDN9LFV",
     "video_url": null
   },
   "ルビーギルマンティーンエイジクラーケン": {
@@ -3008,11 +3016,11 @@
     "video_url": null
   },
   "百妖譜": {
-    "image_url": null,
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/800e4c25e28c3e52f2a9bba87df951c2de196b587d9f42c7d38f10c740ff3e0f._UR1920,1080_SX480_FMjpg_.jpg",
     "release": "2026-10-08",
     "seen_at": "2026-10-07T22:00:49.710959+00:00",
     "title": "百妖譜",
-    "url": null,
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0CNZL3L1X",
     "video_url": null
   },
   "盗掘王": {
