@@ -1,4 +1,12 @@
 {
+  "#ゾンビさがしてます": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/38d4609b2318dd25c363bb703cba14fddbdcf696d48dae5f4c598fbc777ad9c4._UR1920,1080_SX480_FMjpg_.png",
+    "release": "2026-10-09",
+    "seen_at": "2026-10-08T22:00:49.756215+00:00",
+    "title": "#ゾンビさがしてます",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HL3P1HLD",
+    "video_url": "https://www.youtube.com/embed/Q72YGjPWpRc"
+  },
   "3月のライオン": {
     "image_url": "https://m.media-amazon.com/images/S/pv-target-images/64f500f0200a396927174f3cb8f47660a24be4e860099706cda95de66038e61b._UR1920,1080_SX480_FMjpg_.png",
     "release": "2026-09-18",
@@ -624,11 +632,11 @@
     "video_url": null
   },
   "アオアシseason2": {
-    "image_url": null,
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/73ae13a82d9aee51a2f8a3b8f06df0f3f3fbf2e2a5fc7fbc9df0ea8fbae00c28._UR1920,1080_SX480_FMjpg_.jpg",
     "release": "2026-10-08",
     "seen_at": "2026-10-07T22:00:49.710959+00:00",
     "title": "アオアシ Season2",
-    "url": null,
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HJHV7DRY",
     "video_url": "https://www.youtube.com/embed/FwaN0d9U2gI"
   },
   "アオアシシーズン2": {
@@ -725,6 +733,14 @@
     "seen_at": "2026-05-31T15:00:00+00:00",
     "title": "カンフー・パンダ",
     "url": "https://www.amazon.co.jp/gp/video/detail/B0CV5WQFK5",
+    "video_url": null
+  },
+  "ガールズ&パンツァーもっとらぶらぶ作戦です": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/62b93a5cffc68621cbd368efae2985304c5b7a85ddac4ca250a7749c52e65c81._UR1920,1080_SX480_FMjpg_.jpg",
+    "release": "2026-10-09",
+    "seen_at": "2026-10-08T22:00:49.756215+00:00",
+    "title": "ガールズ&パンツァー もっとらぶらぶ作戦です!",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HL3ZBY5X",
     "video_url": null
   },
   "クレバテスii魔獣の王と偽りの勇者伝承": {
@@ -2935,6 +2951,14 @@
     "url": "https://www.amazon.co.jp/gp/video/detail/B0HB6GD3YW",
     "video_url": null
   },
+  "氷の城壁第2期": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/e74687b24cb24e74a249ab1fcff7e75a93c39eae621848f3afa0eecf731d5aa6._UR1920,1080_SX480_FMjpg_.png",
+    "release": "2026-10-09",
+    "seen_at": "2026-10-08T22:00:49.756215+00:00",
+    "title": "氷の城壁 第2期",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0GVNJZHTD",
+    "video_url": null
+  },
   "江戸前エルフ": {
     "image_url": "https://m.media-amazon.com/images/S/pv-target-images/0eb86fe3a75ef3d11b60f521d9cb4234cbd52cd746e97ded0b0b14ee526004ee._UR1920,1080_SX480_FMjpg_.jpg",
     "release": "2026-06-01",
@@ -3038,6 +3062,14 @@
     "title": "盗掘王",
     "url": "https://www.amazon.co.jp/gp/video/detail/B0FWK4G4BW",
     "video_url": null
+  },
+  "目覚めたら最強装備と宇宙船持ちだったので一戸建て目指して傭兵として自由に生きたい": {
+    "image_url": null,
+    "release": "2026-10-09",
+    "seen_at": "2026-10-08T22:00:49.756215+00:00",
+    "title": "目覚めたら最強装備と宇宙船持ちだったので、一戸建て目指して傭兵として自由に生きたい",
+    "url": null,
+    "video_url": "https://www.youtube.com/embed/Z9ofT53sz2U"
   },
   "私の推しは悪役令嬢": {
     "image_url": "https://m.media-amazon.com/images/S/pv-target-images/7525eecadfa48a8f7bbcdf13d644b30245a1266bc4df7204cb6dc087ef89dd5d._UR1920,1080_SX480_FMjpg_.jpg",
@@ -3382,6 +3414,14 @@
     "title": "魔法少女育成計画",
     "url": "https://www.amazon.co.jp/gp/video/detail/B0FQJB8QVW",
     "video_url": null
+  },
+  "魔法少女育成計画restart": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/91ea9fcad537e64faf678409306939f282f2bf7d4fd4e30373bbf0f7e0d27257._UR1920,1080_SX480_FMjpg_.jpg",
+    "release": "2026-10-09",
+    "seen_at": "2026-10-08T22:00:49.756215+00:00",
+    "title": "魔法少女育成計画restart",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HHSTFJPL",
+    "video_url": "https://www.youtube.com/embed/-PX7FqZ55tE"
   },
   "魔法科高校の優等生": {
     "image_url": "https://m.media-amazon.com/images/S/pv-target-images/37b152a980e4009d9423a3822fb531663b11588b1cb941d843cbe9739abe3260._UR1920,1080_SX480_FMjpg_.jpg",
