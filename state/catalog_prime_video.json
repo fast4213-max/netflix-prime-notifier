@@ -903,6 +903,14 @@
     "url": "https://www.amazon.co.jp/gp/video/detail/B0FR2QY6HR",
     "video_url": null
   },
+  "タヌキとキツネ": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/4ef3399c9ede88d07b9ee40f19c7e470ece7c51cfb891116c9952004253c5333._UR1920,1080_SX480_FMjpg_.jpg",
+    "release": "2026-10-11",
+    "seen_at": "2026-10-11T05:00:50.408362+00:00",
+    "title": "タヌキとキツネ",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HM3456MX",
+    "video_url": null
+  },
   "タンタンななつの水晶球と太陽の神殿": {
     "image_url": "https://m.media-amazon.com/images/S/pv-target-images/65e8540664d77053ca8db567720e8660473b0b968a2b10a3dfc5b91dcfebcbd8._UR1920,1080_SX480_FMjpg_.jpg",
     "release": "2026-09-10",
@@ -3104,11 +3112,11 @@
     "video_url": "https://www.youtube.com/embed/EQqWDho6kPA"
   },
   "獣王武神ダンデヴァイン": {
-    "image_url": null,
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/a74c0f2b3d42524e5d760055361db1ebf6789fe0ca5ee1e5fb8d3f452e67c6c2._UR1920,1080_SX480_FMjpg_.png",
     "release": "2026-10-11",
     "seen_at": "2026-10-10T22:00:51.619944+00:00",
     "title": "獣王武神ダンデヴァイン",
-    "url": null,
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HLV3Z429",
     "video_url": "https://www.youtube.com/embed/ihJfkOT_0wU"
   },
   "生徒会にも穴はある": {
