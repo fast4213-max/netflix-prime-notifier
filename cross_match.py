@@ -119,7 +119,27 @@ def _describe(netflix: dict, prime: dict) -> str:
     )
 
 
-def find_new_matches(window_days: int) -> tuple[list[dict], dict[str, str]]:
+def _link_pending(n: dict, p: dict, now: datetime, link_wait_days: int) -> bool:
+    """作品ページのURLがまだ無く、待てば付く見込みがあるか。
+
+    掲載直後のタイトルはURLが空で、数日以内に確定して付くことが多い。URL無しで
+    通知すると、通知は1作品1回きりなので後からリンクを足せない。直近の取得ウィンドウ
+    （7日）を過ぎてもURLが付かないものは、待っても付かないので通知する。
+    """
+    if n.get("url") or p.get("url"):
+        return False
+    try:
+        first_seen = max(
+            datetime.fromisoformat(n["seen_at"]), datetime.fromisoformat(p["seen_at"])
+        )
+    except (KeyError, ValueError):
+        return False
+    return now - first_seen < timedelta(days=link_wait_days)
+
+
+def find_new_matches(
+    window_days: int, link_wait_days: int = 7
+) -> tuple[list[dict], dict[str, str]]:
     """両方のカタログにあって未通知の作品を、キュー用の要素にして返す。
 
     あわせて、今回分を足した通知済みの記録も返す。保存は呼び出し側が
@@ -136,12 +156,16 @@ def find_new_matches(window_days: int) -> tuple[list[dict], dict[str, str]]:
         state_manager.load_cross_notified(), _notified_retention_days(window_days)
     )
     now = state_manager.now_iso()
+    now_dt = datetime.fromisoformat(now)
 
     items: list[dict] = []
     for key in sorted(set(netflix) & set(prime)):
         if key in notified:
             continue
         n, p = netflix[key], prime[key]
+        if _link_pending(n, p, now_dt, link_wait_days):
+            # 通知済みにしないので、URLが付いた次回以降の実行で通知される。
+            continue
         # リンクはNetflix優先。Netflix側のURLがまだ無ければPrime Videoで代用する。
         url = n.get("url") or p.get("url")
         image = pick_image_url(n.get("image_url") or p.get("image_url"), n.get("video_url") or p.get("video_url"))
@@ -173,7 +197,9 @@ def process(config: dict) -> list[str]:
     queue = state_manager.load_queue(CROSS_KEY)
     # 先にキューを保存してから通知済みを保存する。drain_queueはどの経路でも
     # キューを保存するので、積んだ分が通知済みだけ記録されて消えることはない。
-    items, notified = find_new_matches(cross_cfg.get("window_days", 30))
+    items, notified = find_new_matches(
+        cross_cfg.get("window_days", 30), cross_cfg.get("link_wait_days", 7)
+    )
     queue.extend(items)
     state_manager.save_queue(CROSS_KEY, queue)
     state_manager.save_cross_notified(notified)
