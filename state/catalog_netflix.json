@@ -391,6 +391,22 @@
     "url": "https://www.netflix.com/title/81591873",
     "video_url": "https://www.youtube.com/embed/FwaN0d9U2gI"
   },
+  "アダムスファミリー": {
+    "image_url": "https://occ-0-993-988.1.nflxso.net/dnm/api/v6/LSExTNdA1vCOYNZ8eHZ6J0eyIcQ/AAAABZ8QNJsGzWsIEO9iTPZpCBJoLjwRwuQn1e5tk97ZhSRheidB8LT91GLHIcjJDqxb4UdBDRw8rMf5GXphg09jPXn4nNQavqYio-0.jpg?r=f29",
+    "release": "2026-10-23",
+    "seen_at": "2026-10-22T22:00:54.561672+00:00",
+    "title": "アダムス・ファミリー",
+    "url": "https://www.netflix.com/title/81034769",
+    "video_url": null
+  },
+  "アダムスファミリー2アメリカ横断旅行": {
+    "image_url": "https://occ-0-993-988.1.nflxso.net/dnm/api/v6/LSExTNdA1vCOYNZ8eHZ6J0eyIcQ/AAAABeQJ1a-Hl9NU8iET78CCKpIYh4Gc2_9Q_lr3W0afQL6uelxDEpzB60gGT9dAAvs_fg5klwQK489YdQmRHIWn3flVkZ_wdTBMUTM.jpg?r=48f",
+    "release": "2026-10-23",
+    "seen_at": "2026-10-22T22:00:54.561672+00:00",
+    "title": "アダムス・ファミリー２ アメリカ横断旅行！",
+    "url": "https://www.netflix.com/title/81438332",
+    "video_url": null
+  },
   "ギャビーのドールハウスシーズン14": {
     "image_url": "https://occ-0-993-988.1.nflxso.net/dnm/api/v6/0Qzqdxw-HG1AiOKLWWPsFOUDA2E/AAAABZXvo_pcjbiJNaXDymxQg-vA2mSz3eWCFO4dc1YLG_KL0xFn-61V39J252CbaPr6Wa_UYQQcby3qTzonQqBkzdu-fpoYNHsStDA.jpg?r=f35",
     "release": "2026-09-14",
@@ -1229,6 +1245,14 @@
     "seen_at": "2026-09-04T15:00:00+00:00",
     "title": "名探偵コナン 特別セレクション：高木 渉",
     "url": "https://www.netflix.com/title/83120311",
+    "video_url": null
+  },
+  "君のことが大大大大大好きな100人の彼女": {
+    "image_url": "https://occ-0-993-988.1.nflxso.net/dnm/api/v6/LSExTNdA1vCOYNZ8eHZ6J0eyIcQ/AAAABfFm0C9c_nw9MFhdFkGo2fAuP1PyGPh0UdVkIQ9aYTsrDYwjUI13u-Hfyuh5O7gBM4YQKGHnNmiWsD9XOUFEheowtn9t6l8MvZg.jpg?r=744",
+    "release": "2026-10-23",
+    "seen_at": "2026-10-22T22:00:54.561672+00:00",
+    "title": "君のことが大大大大大好きな100人の彼女",
+    "url": "https://www.netflix.com/title/82942053",
     "video_url": null
   },
   "墓場鬼太郎": {
