@@ -31,6 +31,14 @@
     "url": "https://www.netflix.com/title/81924739",
     "video_url": null
   },
+  "blacktorch": {
+    "image_url": "https://occ-0-993-988.1.nflxso.net/dnm/api/v6/LSExTNdA1vCOYNZ8eHZ6J0eyIcQ/AAAABfQvMZb26SejWHFq2VnGPvLA6xyjLiGX2FUpFycDICxNeAv6UoRvzuMy0BKBVvbu15LaKflTe8918iSSmQvct2tqDFPDdJotd4g.jpg?r=1b8",
+    "release": "2026-11-05",
+    "seen_at": "2026-11-04T22:00:47.183638+00:00",
+    "title": "BLACK TORCH",
+    "url": "https://www.netflix.com/title/82942035",
+    "video_url": null
+  },
   "bleach千年血戦篇禍進譚": {
     "image_url": "https://occ-0-988-993.1.nflxso.net/dnm/api/v6/0Qzqdxw-HG1AiOKLWWPsFOUDA2E/AAAABVpnK4mZXiUOiTHWPfINGRbGpX2o9SeMuP3YmbKvhGKK9-pJ_e3Z5OZISLAkp0xP41kkVT-mUl0FJULTeubZlZM37bEna0eq0m8.jpg?r=903",
     "release": "2026-07-26",
@@ -1389,6 +1397,14 @@
     "seen_at": "2026-09-09T15:00:00+00:00",
     "title": "左ききのエレン",
     "url": "https://www.netflix.com/title/82761534",
+    "video_url": null
+  },
+  "幼女戦記シーズン2": {
+    "image_url": "https://occ-0-993-988.1.nflxso.net/dnm/api/v6/LSExTNdA1vCOYNZ8eHZ6J0eyIcQ/AAAABQzIxvU5rPzE-hjxKhF_Sff43pgYJtDCeCpHDKnGu9hhaKKGDQnEW6BjDQZLIS0ipmOdmxXYhTFIytHsDmjLMyUn_oN1IUXFKgc.jpg?r=88d",
+    "release": "2026-11-05",
+    "seen_at": "2026-11-04T22:00:47.183638+00:00",
+    "title": "幼女戦記 シーズン2",
+    "url": "https://www.netflix.com/title/80169285",
     "video_url": null
   },
   "幽☆遊☆白書": {
