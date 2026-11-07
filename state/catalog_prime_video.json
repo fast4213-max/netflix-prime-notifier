@@ -111,6 +111,14 @@
     "url": "https://www.amazon.co.jp/gp/video/detail/B0HKRZ7V32",
     "video_url": "https://www.youtube.com/embed/7rxIZ3z0S4s"
   },
+  "galacticdefenseforce": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/5c1f3a0ee7290551c759d286c4e91dd803772f686ac154d7175cc22e31bab664._UR1920,1080_SX480_FMjpg_.png",
+    "release": "2026-11-07",
+    "seen_at": "2026-11-07T07:00:49.962253+00:00",
+    "title": "Galactic Defense Force",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HMJT49LT",
+    "video_url": null
+  },
   "hisnameispesu": {
     "image_url": "https://m.media-amazon.com/images/S/pv-target-images/c10af8a44b26d36c021778afed31115d2947ed37d3d44521f2d6d5d518f6f289._UR1920,1080_SX480_FMjpg_.jpg",
     "release": "2026-05-08",
@@ -1621,6 +1629,14 @@
     "seen_at": "2026-05-06T15:00:00+00:00",
     "title": "ロボカーポリーバグレスキーチーム",
     "url": "https://www.amazon.co.jp/gp/video/detail/B0GXWKGYQC",
+    "video_url": null
+  },
+  "ロボカーポリーレスキュー探偵団": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/7991ce6e55f737c4d9ff7703befe3e97e5c319beb6645f28a756c8f200834ef4._UR1920,1080_SX480_FMjpg_.jpg",
+    "release": "2026-11-07",
+    "seen_at": "2026-11-07T07:00:49.962253+00:00",
+    "title": "ロボカーポリーレスキュー探偵団",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HKMZHJF4",
     "video_url": null
   },
   "ロボカーポリー車の病院": {
