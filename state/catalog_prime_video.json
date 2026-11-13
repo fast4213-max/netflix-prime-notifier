@@ -279,6 +279,22 @@
     "url": "https://www.amazon.co.jp/gp/video/detail/B0GFY2M2CL",
     "video_url": null
   },
+  "steins;gate": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/c308888d76274b4fb809267cba48e78b78da8b762a6e4b66532174526599d2a2._UR1920,1080_SX480_FMjpg_.jpg",
+    "release": "2026-11-14",
+    "seen_at": "2026-11-13T22:00:54.590755+00:00",
+    "title": "STEINS;GATE",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0GTDPBMZP",
+    "video_url": null
+  },
+  "steins;gate0": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/cf8d77d1674738d2498a098815fe3c84d9660c68edadd4ef7387a85a91703156._UR1920,1080_SX480_FMjpg_.jpg",
+    "release": "2026-11-14",
+    "seen_at": "2026-11-13T22:00:54.590755+00:00",
+    "title": "STEINS;GATE 0",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0GX7TCCXS",
+    "video_url": null
+  },
   "tankchair戦車椅子": {
     "image_url": "https://m.media-amazon.com/images/S/pv-target-images/acfb422f0eb5ff0155131fd21e94d76dc55e0170dc88ceb535ef2dae8ea65b40._UR1920,1080_SX480_FMjpg_.jpg",
     "release": "2026-10-04",
@@ -2062,6 +2078,14 @@
     "title": "凶乱令嬢ニア・リストン 病弱令嬢に転生した神殺しの武人の華麗なる無双録",
     "url": "https://www.amazon.co.jp/gp/video/detail/B0HK6VZ3XK",
     "video_url": "https://www.youtube.com/embed/gxG4vntLtbk"
+  },
+  "劇場版steins;gate負荷領域のデジャヴ": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/0c8161edfadc5cdc9f07793daa271a2b5211f1078d4ca51ef46ca703d11af3e3._UR1920,1080_SX480_FMjpg_.jpg",
+    "release": "2026-11-14",
+    "seen_at": "2026-11-13T22:00:54.590755+00:00",
+    "title": "劇場版STEINS;GATE負荷領域のデジャヴ",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H8KPV1NB",
+    "video_url": null
   },
   "劇場版ソードアートオンライン–オーディナルスケール": {
     "image_url": "https://m.media-amazon.com/images/S/pv-target-images/5509632cc90c38e222da325d703aea849a1eed35bdd5c49c9616561fa6e5a5ab._UR1920,1080_SX480_FMjpg_.jpg",
