@@ -186,7 +186,10 @@ _TRAILING_BRACKETS_RE = re.compile(r"(?:\([^()]*\))+$")
 
 
 def _normalize_title(title: str) -> str:
-    text = unicodedata.normalize("NFKC", title)
+    # NFKCは全角チルダ「～」を「~」に寄せるが、波ダッシュ「〜」はそのまま残す。
+    # 配信前と配信後で表記が揺れると別タイトル扱いになり二重通知になるので揃える
+    # （cross_match.match_keyと同じ扱い）。
+    text = unicodedata.normalize("NFKC", title).replace("〜", "~")
     text = re.sub(r"\s+", "", text)
     stripped = _TRAILING_BRACKETS_RE.sub("", text)
     # 括弧だけのタイトルを空にしてしまわないようにする。
@@ -312,13 +315,16 @@ def process_provider(provider_key: str, provider_cfg: dict, config: dict) -> lis
                 f"[{provider_key}] 配信前に通知済みのタイトルのためスキップ: {entry.title!r}"
             )
             continue
-        # 同じ実行内で仮IDとURL付きの両方が返ってきた場合も1回だけにする。
+        # 同じ実行内で同じタイトルが複数返ってきた場合は1回だけ通知する。
+        # 仮IDとURL付きの両方が返る場合のほか、吹替版/字幕版が別URLで載る場合や、
+        # 同名の別作品が同時に載る場合もある（同じタイトルが並ぶだけで紛らわしいため
+        # 1通にまとめ、残りは既読にだけする）。
+        if normalized in queued_titles:
+            print(
+                f"[{provider_key}] 同じタイトルを今回通知するためスキップ: {entry.title!r}"
+            )
+            continue
         if entry.url is None:
-            if normalized in queued_titles:
-                print(
-                    f"[{provider_key}] 同じタイトルを今回通知するためスキップ: {entry.title!r}"
-                )
-                continue
             provisional_titles.add(normalized)
         queued_titles.add(normalized)
         queue.append(
