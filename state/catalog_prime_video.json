@@ -2087,6 +2087,30 @@
     "url": "https://www.amazon.co.jp/gp/video/detail/B0HK6VZ3XK",
     "video_url": "https://www.youtube.com/embed/gxG4vntLtbk"
   },
+  "劇場版fate/staynight[heaven'sfeel]iiispringsong": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/28e4862dd0f8963ab37e5827b85bfc42dca175d19988b9d870af81347d0855b3._UR1920,1080_SX480_FMjpg_.png",
+    "release": "2026-11-20",
+    "seen_at": "2026-11-19T22:00:57.607026+00:00",
+    "title": "劇場版「Fate/stay night [Heaven's Feel]」III.spring song",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0FLDM6ZGX",
+    "video_url": null
+  },
+  "劇場版fate/staynight[heaven'sfeel]iilostbutterfly": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/d67f7da57637964d6d6e80db2a5e344f6e187fb54aa50a307abde8975c6bca1b._UR1920,1080_SX480_FMjpg_.png",
+    "release": "2026-11-20",
+    "seen_at": "2026-11-19T22:00:57.607026+00:00",
+    "title": "劇場版「Fate/stay night [Heaven's Feel]」II.lost butterfly",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0FGFC5MQ5",
+    "video_url": null
+  },
+  "劇場版fate/staynight[heaven’sfeel]ipresageflower": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/5eda94238408f14fb0551a44badb742b45f522ca4280c990a175270b345f501d._UR1920,1080_SX480_FMjpg_.png",
+    "release": "2026-11-20",
+    "seen_at": "2026-11-19T22:00:57.607026+00:00",
+    "title": "劇場版「Fate/stay night [Heaven’s Feel]」I.presage flower",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HMYZ8TQF",
+    "video_url": null
+  },
   "劇場版steins;gate負荷領域のデジャヴ": {
     "image_url": "https://m.media-amazon.com/images/S/pv-target-images/0c8161edfadc5cdc9f07793daa271a2b5211f1078d4ca51ef46ca703d11af3e3._UR1920,1080_SX480_FMjpg_.jpg",
     "release": "2026-11-14",
@@ -2414,6 +2438,86 @@
     "title": "劇場版「暗殺教室」みんなの時間",
     "url": "https://www.amazon.co.jp/gp/video/detail/B0H8PFW7KN",
     "video_url": "https://www.youtube.com/embed/Mbc1i7QZW9E"
+  },
+  "劇場版空の境界未来福音": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/b1a212f2c2d96d56a8629588709ccd2e2f1e5e13ac1f9b088f98cd0995c775b5._UR1920,1080_SX480_FMjpg_.png",
+    "release": "2026-11-20",
+    "seen_at": "2026-11-19T22:00:57.607026+00:00",
+    "title": "劇場版「空の境界」未来福音",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0GXC16Z8M",
+    "video_url": null
+  },
+  "劇場版空の境界未来福音extrachorus": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/709994c3a711d7f1998b03d8f2c4146e51462f7bba7275cbd415ab46abce267f._UR1920,1080_SX480_FMjpg_.png",
+    "release": "2026-11-20",
+    "seen_at": "2026-11-19T22:00:57.607026+00:00",
+    "title": "劇場版「空の境界」未来福音 extra chorus",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H879H373",
+    "video_url": null
+  },
+  "劇場版空の境界第一章俯瞰風景": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/244893582e9571ac4824fa4f1870a8adecc034438281af45b94f915915340539._UR1920,1080_SX480_FMjpg_.png",
+    "release": "2026-11-20",
+    "seen_at": "2026-11-19T22:00:57.607026+00:00",
+    "title": "劇場版「空の境界」第一章 俯瞰風景",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H887X95Z",
+    "video_url": null
+  },
+  "劇場版空の境界第七章殺人考察": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/c8819efdc085fbf630dd3e72360a377c186388698dedb420ae633f75a0162e61._UR1920,1080_SX480_FMjpg_.png",
+    "release": "2026-11-20",
+    "seen_at": "2026-11-19T22:00:57.607026+00:00",
+    "title": "劇場版「空の境界」第七章 殺人考察 (後)",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0GGWD66BX",
+    "video_url": null
+  },
+  "劇場版空の境界第三章痛覚残留": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/f4f18c34cf63873dd5a1bac18ca2076c203fea0596c407474ba9b63cc58f4f54._UR1920,1080_SX480_FMjpg_.png",
+    "release": "2026-11-20",
+    "seen_at": "2026-11-19T22:00:57.607026+00:00",
+    "title": "劇場版「空の境界」第三章 痛覚残留",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H85HBRRC",
+    "video_url": null
+  },
+  "劇場版空の境界第二章殺人考察": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/9e191d6e9e73f90dd270145f97dcc246e28863b1ea8e6c41ac7985ea771387ab._UR1920,1080_SX480_FMjpg_.png",
+    "release": "2026-11-20",
+    "seen_at": "2026-11-19T22:00:57.607026+00:00",
+    "title": "劇場版「空の境界」第二章 殺人考察 (前)",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H895JRQS",
+    "video_url": null
+  },
+  "劇場版空の境界第五章矛盾螺旋": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/30fa6510c294193b0507ee854b3f614440ed106f6259baa617600f0f302285c4._UR1920,1080_SX480_FMjpg_.png",
+    "release": "2026-11-20",
+    "seen_at": "2026-11-19T22:00:57.607026+00:00",
+    "title": "劇場版「空の境界」第五章 矛盾螺旋",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H889LXQF",
+    "video_url": null
+  },
+  "劇場版空の境界第六章忘却録音": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/1a618142fab5035758fc7c133a2fe63d655defbe4f5e554e07108b1590b8c4de._UR1920,1080_SX480_FMjpg_.png",
+    "release": "2026-11-20",
+    "seen_at": "2026-11-19T22:00:57.607026+00:00",
+    "title": "劇場版「空の境界」第六章 忘却録音",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HKP957JS",
+    "video_url": null
+  },
+  "劇場版空の境界第四章伽藍の洞": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/e0dc2c111e68fdcf91dfbc1911989f9ed4173d37856caf1a3a735eda00e58376._UR1920,1080_SX480_FMjpg_.png",
+    "release": "2026-11-20",
+    "seen_at": "2026-11-19T22:00:57.607026+00:00",
+    "title": "劇場版「空の境界」第四章 伽藍の洞",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H85H4BGV",
+    "video_url": null
+  },
+  "劇場版空の境界終章": {
+    "image_url": "https://m.media-amazon.com/images/S/pv-target-images/29d27561053a85e0402fe9cfe51485f47d434ae579b96a82d0177366c8ab5c41._UR1920,1080_SX480_FMjpg_.png",
+    "release": "2026-11-20",
+    "seen_at": "2026-11-19T22:00:57.607026+00:00",
+    "title": "劇場版「空の境界」終章",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H876XKPX",
+    "video_url": null
   },
   "劇場版総集編メイドインアビス前編旅立ちの夜明け": {
     "image_url": "https://m.media-amazon.com/images/S/pv-target-images/6d31ace3e372778b1e1b4c7384ef2edfeb52eb9bf33ccf87c0ccb893d0af8798._UR1920,1080_SX480_FMjpg_.jpg",
