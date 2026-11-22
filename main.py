@@ -184,6 +184,12 @@ def broadcast_errors(config: dict, errors: list[str]) -> None:
 # 何か月も後に同名の別作品が来たときまで握りつぶさないよう、期間を区切る。
 _PROVISIONAL_MATCH_DAYS = 30
 
+# ジャンル別通知で、同じチャンネルに同じ作品名を再び通知しない期間。
+# Primeは字幕版と吹替版が別URLで別の日に載ることがあり、URLが違うため
+# 別作品として二重通知されてしまう。チャンネルまで含めて照合するので、
+# 同名の映画とドラマのような別作品は抑えない。
+_GENRE_TITLE_SUPPRESS_DAYS = 30
+
 # 配信後は「(字幕版)」等の版表記が後ろに付くことがあるので、照合時は落とす。
 _TRAILING_BRACKETS_RE = re.compile(r"(?:\([^()]*\))+$")
 
@@ -423,6 +429,9 @@ def process_genre(
     now = state_manager.now_iso()
     provisional_titles = _provisional_titles(provider_key, active)
     queued_titles: set[str] = set()
+    recent_titles = state_manager.prune_by_age(
+        state_manager.load_genre_titles(state_key), _GENRE_TITLE_SUPPRESS_DAYS
+    )
     titles_with_image = {_normalize_title(e.title) for e in candidates if e.image_url}
     # 候補1件は必ずどれか1つの区分に数える。区分の合計が候補数と合わなければ、
     # 処理のどこかで取りこぼしている（コードの変更ミスなど）ので異常として通知する。
@@ -433,9 +442,6 @@ def process_genre(
         counts[name] = counts.get(name, 0) + 1
 
     for entry in candidates:
-        if entry.id in active:
-            count("既読")
-            continue
         if (
             entry.id in anime_ids
             or entry.id in anime_active
@@ -445,11 +451,19 @@ def process_genre(
             count("アニメ(別通知)")
             continue
         channel = genre_router.classify(entry, genre_cfg)
+        normalized = _normalize_title(entry.title)
+        title_key = f"{channel}:{normalized}"
+        if entry.id in active:
+            # 既読の作品名も覚える。初回既読化で登録した作品の字幕版/吹替版が
+            # 後から載ったときに、再通知されないようにするため。
+            recent_titles.setdefault(title_key, now)
+            count("既読")
+            continue
+        channel = genre_router.classify(entry, genre_cfg)
         if channel not in webhooks:
             # 既読にしないので、Webhookを設定した後の実行で通知される。
             count("Webhook未設定で保留")
             continue
-        normalized = _normalize_title(entry.title)
         if not entry.image_url and normalized in titles_with_image:
             active[entry.id] = now
             count("画像付き同名ありでスキップ")
@@ -460,6 +474,9 @@ def process_genre(
         active[entry.id] = now
         if normalized in provisional_titles:
             count("配信前に通知済みでスキップ")
+            continue
+        if title_key in recent_titles:
+            count("同名を最近通知済みでスキップ")
             continue
         if normalized in queued_titles:
             count("同一実行内の同名でスキップ")
@@ -477,6 +494,7 @@ def process_genre(
                 "channel": channel,
             }
         )
+        recent_titles[title_key] = now
         count("新着")
         per_channel[channel] = per_channel.get(channel, 0) + 1
 
@@ -495,6 +513,7 @@ def process_genre(
 
     pruned = state_manager.prune_active(active)
     state_manager.save_active(state_key, pruned)
+    state_manager.save_genre_titles(state_key, recent_titles)
     return errors + _drain_genre_queue(state_key, genre_cfg, webhooks, queue, config)
 
 

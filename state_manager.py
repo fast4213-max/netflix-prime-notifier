@@ -115,6 +115,19 @@ def prune_active(active: dict[str, str]) -> dict[str, str]:
     return prune_by_age(active, ACTIVE_RETENTION_DAYS)
 
 
+def load_genre_titles(state_key: str) -> dict[str, str]:
+    """ジャンル別通知で最近通知した作品名: `{チャンネル:正規化タイトル: 日時}`。
+
+    字幕版/吹替版など、別URLで別の日に載る同じ作品の再通知を抑えるのに使う。
+    """
+    data = _load_json(STATE_DIR / f"{state_key}_titles.json", {})
+    return data if isinstance(data, dict) else {}
+
+
+def save_genre_titles(state_key: str, titles: dict[str, str]) -> None:
+    _save_json(STATE_DIR / f"{state_key}_titles.json", titles)
+
+
 def _catalog_path(provider: str) -> Path:
     return STATE_DIR / f"catalog_{provider}.json"
 

@@ -115,6 +115,41 @@ class ProcessGenre(unittest.TestCase):
         self.assertEqual(len(self.sent), 4)
         self.assertEqual(state_manager.load_queue("netflix_genre"), [])
 
+    def test_same_title_other_variant_later_is_suppressed(self):
+        """字幕版→吹替版が別の日に別URLで載っても、同じチャンネルへ再通知しない。"""
+        first = [ev(10, "ロッキー (字幕版)", "movie", "overseas", ["ドラマ"])]
+        second = first + [ev(11, "ロッキー (吹替版)", "movie", "overseas", ["ドラマ"])]
+        with mock.patch.object(main, "fetch_recent_events", lambda p, scope="anime": list(first)):
+            self.run_once(set())
+        self.sent.clear()
+        with mock.patch.object(main, "fetch_recent_events", lambda p, scope="anime": list(second)):
+            self.run_once(set())
+        self.assertEqual(self.sent, [])
+        # 吹替版は既読にして、毎時の再判定で蒸し返さない。
+        self.assertIn("https://www.netflix.com/title/11", state_manager.load_active("netflix_genre"))
+
+    def test_same_title_different_channel_is_not_suppressed(self):
+        movie = ev(20, "キャリー", "movie", "overseas", ["ホラー"])
+        series = ev(21, "キャリー", "tv", "overseas", ["TVヒューマンドラマ"])
+        with mock.patch.object(main, "fetch_recent_events", lambda p, scope="anime": [movie]):
+            self.run_once(set())
+        self.sent.clear()
+        with mock.patch.object(main, "fetch_recent_events", lambda p, scope="anime": [movie, series]):
+            self.run_once(set())
+        self.assertEqual([[t[0] for t in i] for _, i in self.sent], [["キャリー"]])
+        self.assertEqual(self.sent[0][0], "https://hook/drama_foreign")
+
+    def test_known_titles_are_remembered_after_init_read(self):
+        # 初回既読化で登録済み（通知していない）の作品の吹替版が後から載っても通知しない。
+        base = ev(30, "サメ (字幕版)", "movie", "overseas", ["アクション"])
+        state_manager.save_active("netflix_genre", {base.id: "2026-11-22T00:00:00+00:00"})
+        with mock.patch.object(main, "fetch_recent_events", lambda p, scope="anime": [base]):
+            self.run_once(set())
+        later = ev(31, "サメ (吹替版)", "movie", "overseas", ["アクション"])
+        with mock.patch.object(main, "fetch_recent_events", lambda p, scope="anime": [base, later]):
+            self.run_once(set())
+        self.assertEqual(self.sent, [])
+
 
 if __name__ == "__main__":
     unittest.main()
