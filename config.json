@@ -15,5 +15,86 @@
   "cross": {
     "webhook_env": "DISCORD_WEBHOOK_CROSS",
     "window_days": 365
+  },
+  "genre": {
+    "anime_keywords": [
+      "アニメ"
+    ],
+    "provider_env_prefix": {
+      "netflix": "NETFLIX",
+      "prime_video": "PRIME"
+    },
+    "keyword_groups": {
+      "documentary": [
+        "ドキュメンタリー"
+      ],
+      "variety": [
+        "バラエティ",
+        "リアリティ",
+        "お笑い",
+        "トーク"
+      ],
+      "drama": [
+        "ドラマ",
+        "サスペンス",
+        "ロマンス",
+        "ロマンチック",
+        "ラブ",
+        "コメディ",
+        "ファンタジー",
+        "ホラー",
+        "SF",
+        "アクション",
+        "ミステリー",
+        "スリラー",
+        "犯罪",
+        "時代劇",
+        "歴史",
+        "冒険",
+        "青春"
+      ]
+    },
+    "channels": [
+      {
+        "key": "documentary",
+        "label": "ドキュメンタリー",
+        "genre_group": "documentary"
+      },
+      {
+        "key": "variety",
+        "label": "バラエティ",
+        "genre_group": "variety"
+      },
+      {
+        "key": "movie_jp",
+        "label": "邦画",
+        "kind": "movie",
+        "region": "domestic"
+      },
+      {
+        "key": "movie_foreign",
+        "label": "洋画",
+        "kind": "movie",
+        "region": "overseas"
+      },
+      {
+        "key": "drama_jp",
+        "label": "国内ドラマ",
+        "kind": "tv",
+        "region": "domestic",
+        "genre_group": "drama"
+      },
+      {
+        "key": "drama_foreign",
+        "label": "海外ドラマ",
+        "kind": "tv",
+        "region": "overseas",
+        "genre_group": "drama"
+      },
+      {
+        "key": "other",
+        "label": "その他"
+      }
+    ]
   }
 }

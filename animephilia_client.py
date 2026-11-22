@@ -59,6 +59,18 @@ _ARRIVAL_CALENDAR_PATH = {
     "prime_video": "/amazon-prime-video-new-animes-calendar/",
 }
 
+# 全ジャンル版の新着カレンダー。アニメ版と同じajaxで、ジャンルを絞らずに返る。
+# アニメ版の部分集合ではなく（アニメ版にだけ載るアニメがある）、こちらにも
+# アニメが少し混ざるので、呼び出し側でアニメ版との突き合わせで除外すること。
+_ALL_ARRIVAL_CALENDAR_PATH = {
+    "netflix": "/netflix-arrival-calendar/",
+    "prime_video": "/amazon-prime-video-arrival-calendar/",
+}
+
+# `scope`の値。アニメ版（既存の通知）と全ジャンル版（ジャンル別通知用）。
+SCOPE_ANIME = "anime"
+SCOPE_ALL = "all"
+
 # ページのインラインスクリプトに `ajax_calendar = {"url":"...","nonce":"..."}`
 # という形で埋め込まれているWordPressのnonce。ajax呼び出しの度に必要。
 _NONCE_PATTERN = re.compile(r'ajax_calendar\s*=\s*\{"url":"[^"]*","nonce":"([0-9a-f]+)"\}')
@@ -84,6 +96,20 @@ class CalendarEvent:
     # 画像が無いタイトルのYouTube動画URL。サムネイルの有無確認には通信が要るので、
     # 既読のタイトルまで毎回確かめないよう`resolve_image_url`で必要な分だけ解決する。
     video_url: str | None = None
+    # 全ジャンル版のジャンル振り分け用。`kind`は"movie"/"tv"、`region`は
+    # "domestic"/"overseas"（値が欠けていたり想定外でも落とさず、そのまま持つ）。
+    kind: str | None = None
+    region: str | None = None
+    genres: tuple[str, ...] = ()
+
+
+def _parse_genres(raw) -> tuple[str, ...]:
+    """`genres`を文字列のタプルにする。PHPの都合で配列が連想配列になっていても拾う。"""
+    if isinstance(raw, dict):
+        raw = list(raw.values())
+    if not isinstance(raw, list):
+        return ()
+    return tuple(g for g in raw if isinstance(g, str))
 
 
 def _strip_tracking_params(url: str) -> str:
@@ -130,9 +156,9 @@ def resolve_image_url(event: CalendarEvent) -> str | None:
     return pick_image_url(event.image_url, event.video_url)
 
 
-def fallback_url(provider_short_name: str) -> str | None:
+def fallback_url(provider_short_name: str, scope: str = SCOPE_ANIME) -> str | None:
     """作品個別のURLがまだ無いときの代替リンク（Animephiliaの新着カレンダー）。"""
-    page_path = _ARRIVAL_CALENDAR_PATH.get(provider_short_name)
+    page_path = _page_path(provider_short_name, scope, missing_ok=True)
     return _BASE_URL + page_path if page_path else None
 
 
@@ -160,8 +186,15 @@ def _request_with_retry(description: str, send):
     raise AnimephiliaError(f"{description}に失敗しました: {last_exc}") from last_exc
 
 
-def _fetch_nonce(provider_short_name: str) -> str:
-    page_path = _ARRIVAL_CALENDAR_PATH[provider_short_name]
+def _page_path(provider_short_name: str, scope: str, *, missing_ok: bool = False) -> str | None:
+    paths = _ALL_ARRIVAL_CALENDAR_PATH if scope == SCOPE_ALL else _ARRIVAL_CALENDAR_PATH
+    if missing_ok:
+        return paths.get(provider_short_name)
+    return paths[provider_short_name]
+
+
+def _fetch_nonce(provider_short_name: str, scope: str = SCOPE_ANIME) -> str:
+    page_path = _page_path(provider_short_name, scope)
     response = _request_with_retry(
         "Animephiliaのページ取得",
         lambda: httpx.get(
@@ -181,12 +214,15 @@ def _fetch_nonce(provider_short_name: str) -> str:
     return match.group(1)
 
 
-def fetch_recent_events(provider_short_name: str) -> list[CalendarEvent]:
+def fetch_recent_events(
+    provider_short_name: str, scope: str = SCOPE_ANIME
+) -> list[CalendarEvent]:
     """直近1週間分（当日含む）の新着イベントを取得する。
 
     provider_short_name: "netflix" または "prime_video"
+    scope: `SCOPE_ANIME`（アニメ版。既定）または `SCOPE_ALL`（全ジャンル版）
     """
-    return _fetch_calendar(provider_short_name, "")
+    return _fetch_calendar(provider_short_name, "", scope)
 
 
 def fetch_month_events(provider_short_name: str, year: int, month: int) -> list[CalendarEvent]:
@@ -198,9 +234,11 @@ def fetch_month_events(provider_short_name: str, year: int, month: int) -> list[
     return _fetch_calendar(provider_short_name, f"month/{year:04d}/{month:02d}/")
 
 
-def _fetch_calendar(provider_short_name: str, path_suffix: str) -> list[CalendarEvent]:
-    page_path = _ARRIVAL_CALENDAR_PATH[provider_short_name]
-    nonce = _fetch_nonce(provider_short_name)
+def _fetch_calendar(
+    provider_short_name: str, path_suffix: str, scope: str = SCOPE_ANIME
+) -> list[CalendarEvent]:
+    page_path = _page_path(provider_short_name, scope)
+    nonce = _fetch_nonce(provider_short_name, scope)
     ajax_path = page_path + path_suffix
 
     response = _request_with_retry(
@@ -211,7 +249,8 @@ def _fetch_calendar(provider_short_name: str, path_suffix: str) -> list[Calendar
                 "action": "get_svod_calendar_events",
                 "service": provider_short_name,
                 "type": "new",
-                "genre": "anime",
+                # 全ジャンル版はジャンル指定なし（空）で全件が返る（実機確認済み）。
+                "genre": "anime" if scope == SCOPE_ANIME else "",
                 "path": ajax_path,
                 "nonce": nonce,
             },
@@ -272,6 +311,9 @@ def _fetch_calendar(provider_short_name: str, path_suffix: str) -> list[Calendar
                     url=url,
                     image_url=item.get("image") or None,
                     video_url=item.get("video") or None,
+                    kind=item.get("kind") or None,
+                    region=item.get("region") or None,
+                    genres=_parse_genres(item.get("genres")),
                 )
             )
     return events

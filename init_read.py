@@ -4,6 +4,11 @@ repository_dispatch (event_type=init-read) から呼ばれる想定。
 本番運用(main.py)を開始する前に一度だけ実行し、Animephiliaのカレンダーが
 返す直近1週間分がいきなり全部「新着」扱いされて一斉通知が飛ぶのを防ぐ。
 
+アニメ（`{provider}_active.json`）と、ジャンル別通知（`{provider}_genre_active.json`）の
+両方を既読化する。ジャンル別を後から追加した場合も、このジョブを実行すれば
+全ジャンル版の直近1週間分が通知なしで既読になる（アニメ分は既存の既読を壊さない。
+`setdefault`で未登録のIDだけを足す）。
+
 過去のカタログ全体を既読化する必要は無い（今後の配信だけを検知できれば良い
 ため）。直近1週間分だけを対象にすれば十分。
 """
@@ -14,7 +19,7 @@ import sys
 import traceback
 
 import state_manager
-from animephilia_client import fetch_recent_events
+from animephilia_client import SCOPE_ALL, fetch_recent_events
 
 
 def main() -> None:
@@ -34,6 +39,21 @@ def main() -> None:
             active.setdefault(entry.id, now)
         state_manager.save_active(provider_key, active)
         print(f"[{provider_key}] 直近{len(recent)}件を既存登録しました（通知なし）。")
+
+        # ジャンル別（全ジャンル版）。アニメ分も入るが、通知時にアニメは除外されるので無害。
+        try:
+            recent_all = fetch_recent_events(provider_key, SCOPE_ALL)
+        except Exception as exc:  # noqa: BLE001 片方の失敗で全体を止めない
+            print(f"[{provider_key}/genre] Animephilia取得エラー: {exc}")
+            traceback.print_exc()
+            failed.append(f"{provider_key}/genre")
+            continue
+        genre_key = f"{provider_key}_genre"
+        genre_active = state_manager.load_active(genre_key)
+        for entry in recent_all:
+            genre_active.setdefault(entry.id, now)
+        state_manager.save_active(genre_key, genre_active)
+        print(f"[{provider_key}/genre] 直近{len(recent_all)}件を既存登録しました（通知なし）。")
 
     if failed:
         # 既読化できていないプロバイダを成功扱いで放置すると、次のrun-notifyで

@@ -18,6 +18,7 @@ animephilia_client経由のこの方式に一本化した。過去のカタロ�
 from __future__ import annotations
 
 import json
+import os
 import re
 import traceback
 import unicodedata
@@ -25,8 +26,10 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import cross_match
+import genre_router
 import state_manager
 from animephilia_client import (
+    SCOPE_ALL,
     AnimephiliaError,
     fallback_url,
     fetch_recent_events,
@@ -258,11 +261,19 @@ def _should_wait_for_image(entry) -> bool:
     return datetime.now(timezone.utc) < released + _IMAGE_WAIT_AFTER_RELEASE
 
 
-def process_provider(provider_key: str, provider_cfg: dict, config: dict) -> list[str]:
-    """1プロバイダ分の新着チェックと送信を行い、エラーの説明文リストを返す。"""
+def process_provider(
+    provider_key: str, provider_cfg: dict, config: dict
+) -> tuple[list[str], set[str] | None]:
+    """1プロバイダ分の新着チェックと送信を行う（アニメ）。
+
+    Returns:
+        (エラーの説明文リスト, アニメ版カレンダーに載っていたIDの集合)。
+        アニメ版を取得できなかったとき（Webhook未設定を含む）は集合の代わりにNone。
+        ジャンル別通知が、アニメを二重に通知しないための除外に使う。
+    """
     webhook_url = resolve_webhook_url(provider_key, provider_cfg)
     if not webhook_url:
-        return []
+        return [], None
 
     active = state_manager.load_active(provider_key)
     queue = state_manager.load_queue(provider_key)
@@ -274,7 +285,10 @@ def process_provider(provider_key: str, provider_cfg: dict, config: dict) -> lis
         traceback.print_exc()
         # 取得失敗時もキューの続きだけは送っておく（新規追加は無し）
         errors = drain_queue(provider_key, webhook_url, queue, config)
-        return [f"[{provider_key}] Animephiliaからの新着取得に失敗しました: {exc}"] + errors
+        return (
+            [f"[{provider_key}] Animephiliaからの新着取得に失敗しました: {exc}"] + errors,
+            None,
+        )
 
     # 重複配信の突き合わせ用に、見えたタイトルは通知の有無と無関係に全部記録する。
     cross_match.register_events(
@@ -353,19 +367,204 @@ def process_provider(provider_key: str, provider_cfg: dict, config: dict) -> lis
             f"（残り{len(pruned)}件）。"
         )
     state_manager.save_active(provider_key, pruned)
-    return drain_queue(provider_key, webhook_url, queue, config)
+    anime_ids = {entry.id for entry in candidates}
+    return drain_queue(provider_key, webhook_url, queue, config), anime_ids
+
+
+def process_genre(
+    provider_key: str, config: dict, anime_ids: set[str] | None
+) -> list[str]:
+    """1プロバイダ分のジャンル別通知（アニメ以外）を行い、エラーの説明文リストを返す。
+
+    全ジャンル版カレンダーからアニメを除いた残りを、`config["genre"]`の規則で
+    ジャンル別チャンネルへ振り分ける。設計は docs/DESIGN_GENRE.md。
+    """
+    genre_cfg = config.get("genre")
+    if not genre_cfg:
+        return []
+
+    channel_keys = [c["key"] for c in genre_cfg["channels"]]
+    webhooks: dict[str, str] = {}
+    for key in channel_keys:
+        url = os.environ.get(genre_router.webhook_env_name(genre_cfg, provider_key, key))
+        if url:
+            webhooks[key] = url
+    missing = [k for k in channel_keys if k not in webhooks]
+    if not webhooks:
+        print(f"[{provider_key}/genre] ジャンル別のWebhookが1つも設定されていないためスキップします。")
+        return []
+    if missing:
+        print(
+            f"[{provider_key}/genre] Webhook未設定のチャンネル: {', '.join(missing)}"
+            "（該当ジャンルは通知せず既読にもしません）"
+        )
+    if anime_ids is None:
+        print(
+            f"[{provider_key}/genre] アニメ版を取得できなかったため、アニメを除外できず"
+            "ジャンル別通知をスキップします。"
+        )
+        return []
+
+    state_key = f"{provider_key}_genre"
+    active = state_manager.load_active(state_key)
+    queue = state_manager.load_queue(state_key)
+    anime_active = state_manager.load_active(provider_key)
+
+    try:
+        candidates = fetch_recent_events(provider_key, SCOPE_ALL)
+    except AnimephiliaError as exc:
+        print(f"[{provider_key}/genre] Animephilia取得エラー: {exc}")
+        traceback.print_exc()
+        errors = _drain_genre_queue(state_key, genre_cfg, webhooks, queue, config)
+        return [
+            f"[{provider_key}] Animephiliaからの新着取得に失敗しました（全ジャンル版）: {exc}"
+        ] + errors
+
+    now = state_manager.now_iso()
+    provisional_titles = _provisional_titles(provider_key, active)
+    queued_titles: set[str] = set()
+    titles_with_image = {_normalize_title(e.title) for e in candidates if e.image_url}
+    # 候補1件は必ずどれか1つの区分に数える。区分の合計が候補数と合わなければ、
+    # 処理のどこかで取りこぼしている（コードの変更ミスなど）ので異常として通知する。
+    counts: dict[str, int] = {}
+    per_channel: dict[str, int] = {}
+
+    def count(name: str) -> None:
+        counts[name] = counts.get(name, 0) + 1
+
+    for entry in candidates:
+        if entry.id in active:
+            count("既読")
+            continue
+        if (
+            entry.id in anime_ids
+            or entry.id in anime_active
+            or genre_router.is_anime(entry, genre_cfg)
+        ):
+            # アニメは既存の通知が担当。ここでは既読にもしない。
+            count("アニメ(別通知)")
+            continue
+        channel = genre_router.classify(entry, genre_cfg)
+        if channel not in webhooks:
+            # 既読にしないので、Webhookを設定した後の実行で通知される。
+            count("Webhook未設定で保留")
+            continue
+        normalized = _normalize_title(entry.title)
+        if not entry.image_url and normalized in titles_with_image:
+            active[entry.id] = now
+            count("画像付き同名ありでスキップ")
+            continue
+        if _should_wait_for_image(entry):
+            count("画像待ちで保留")
+            continue
+        active[entry.id] = now
+        if normalized in provisional_titles:
+            count("配信前に通知済みでスキップ")
+            continue
+        if normalized in queued_titles:
+            count("同一実行内の同名でスキップ")
+            continue
+        if entry.url is None:
+            provisional_titles.add(normalized)
+        queued_titles.add(normalized)
+        queue.append(
+            {
+                "id": entry.id,
+                "title": entry.title,
+                "image_url": resolve_image_url(entry),
+                "url": entry.url or fallback_url(provider_key, SCOPE_ALL),
+                "detected_at": now,
+                "channel": channel,
+            }
+        )
+        count("新着")
+        per_channel[channel] = per_channel.get(channel, 0) + 1
+
+    errors: list[str] = []
+    summary = " / ".join(f"{name}{n}" for name, n in counts.items()) or "なし"
+    print(
+        f"[{provider_key}/genre] 候補{len(candidates)}件: {summary}"
+        f"。新着の内訳: {per_channel or 'なし'}。送信待ちキュー: {len(queue)}件"
+    )
+    if sum(counts.values()) != len(candidates):
+        errors.append(
+            f"[{provider_key}] ジャンル別通知の件数が合いません"
+            f"（候補{len(candidates)}件、区分の合計{sum(counts.values())}件）。"
+            "取りこぼしの可能性があります。"
+        )
+
+    pruned = state_manager.prune_active(active)
+    state_manager.save_active(state_key, pruned)
+    return errors + _drain_genre_queue(state_key, genre_cfg, webhooks, queue, config)
+
+
+def _drain_genre_queue(
+    state_key: str,
+    genre_cfg: dict,
+    webhooks: dict[str, str],
+    queue: list[dict],
+    config: dict,
+) -> list[str]:
+    """ジャンル別の共有キューを、チャンネル毎に送信して保存する。
+
+    キューファイルは会社ごとに1つで、各要素が`channel`を持つ。Webhook未設定や
+    不明なチャンネルの要素は送らず、そのままキューに残す（捨てない）。
+    """
+    channel_keys = [c["key"] for c in genre_cfg["channels"]]
+    by_channel = {
+        k: [i for i in queue if isinstance(i, dict) and i.get("channel") == k]
+        for k in channel_keys
+    }
+    sendable = {k for k in channel_keys if k in webhooks}
+    leftover = [
+        i
+        for i in queue
+        if not (isinstance(i, dict) and i.get("channel") in sendable)
+    ]
+    remaining: dict[str, list[dict]] = {}
+    errors: list[str] = []
+    try:
+        for key in channel_keys:
+            if key not in sendable or not by_channel[key]:
+                continue
+
+            def persist(q: list[dict], key: str = key) -> None:
+                remaining[key] = q
+
+            errors.extend(
+                drain_queue(
+                    f"{state_key}/{key}", webhooks[key], by_channel[key], config, persist
+                )
+            )
+    finally:
+        merged = list(leftover)
+        for key in channel_keys:
+            merged.extend(remaining.get(key, by_channel[key]) if key in sendable else [])
+        state_manager.save_queue(state_key, merged)
+    return errors
 
 
 def main() -> None:
     config = load_config()
     errors: list[str] = []
     for provider_key, provider_cfg in config["providers"].items():
+        anime_ids: set[str] | None = None
         try:
-            errors.extend(process_provider(provider_key, provider_cfg, config))
+            provider_errors, anime_ids = process_provider(provider_key, provider_cfg, config)
+            errors.extend(provider_errors)
         except Exception as exc:  # noqa: BLE001 1プロバイダの想定外エラーで全体を止めない
             print(f"[{provider_key}] 想定外のエラーが発生しました:")
             traceback.print_exc()
             errors.append(f"[{provider_key}] 想定外のエラーが発生しました: {exc}")
+
+        # アニメの後にジャンル別（アニメ以外）を処理する。アニメ側が失敗しても、
+        # ジャンル側は影響を受けずに（アニメ版を取得できた場合に限り）動く。
+        try:
+            errors.extend(process_genre(provider_key, config, anime_ids))
+        except Exception as exc:  # noqa: BLE001 ジャンル側の失敗でアニメ側の結果は止めない
+            print(f"[{provider_key}/genre] 想定外のエラーが発生しました:")
+            traceback.print_exc()
+            errors.append(f"[{provider_key}] ジャンル別通知で想定外のエラーが発生しました: {exc}")
 
     # 両プロバイダの取得が済んだ後で、Netflix×Prime Videoの重複配信を突き合わせる。
     try:

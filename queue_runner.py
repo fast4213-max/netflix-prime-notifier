@@ -48,7 +48,11 @@ def _chunk_items(chunk: list[dict]) -> list[tuple]:
 
 
 def drain_queue(
-    provider_key: str, webhook_url: str, queue: list[dict], config: dict
+    provider_key: str,
+    webhook_url: str,
+    queue: list[dict],
+    config: dict,
+    persist=None,
 ) -> list[str]:
     """キューの先頭から上限件数分だけ、複数件をまとめてDiscordへ送信する。
 
@@ -60,6 +64,10 @@ def drain_queue(
     - 400を受けたら1件ずつに分割して原因の1件を特定し、その1件だけ捨てる
       （何度送っても成功しない内容なので、そのままだとキューの先頭が
       永久に詰まって以降の新着が一切通知されなくなる）
+
+    `persist`は残りのキューを保存する関数（既定は`state_manager.save_queue`）。
+    1つのキューファイルを複数チャンネルで共有する呼び出し側（ジャンル別通知）が、
+    自分でまとめて保存するために差し替える。
 
     Returns:
         発生したエラーの説明文のリスト（正常時は空）。
@@ -172,7 +180,10 @@ def drain_queue(
         print(f"[{provider_key}] 今回の送信: {sent_count}件。キュー残り: {len(queue)}件")
         return errors
     finally:
-        state_manager.save_queue(provider_key, queue)
+        if persist is not None:
+            persist(queue)
+        else:
+            state_manager.save_queue(provider_key, queue)
 
 
 def try_send_error(webhook_url: str, message: str) -> bool:

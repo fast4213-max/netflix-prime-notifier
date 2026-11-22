@@ -39,6 +39,17 @@ Discordの各チャンネルで「連携サービスを編集」→「Webhookを
 | `DISCORD_WEBHOOK_PRIME` | Prime Videoチャンネルへの通知用Webhook URL |
 | `DISCORD_WEBHOOK_CROSS` | 重複配信（NetflixとPrime Videoの両方で配信）チャンネル用Webhook URL |
 
+アニメ以外のジャンル別通知（[docs/DESIGN_GENRE.md](docs/DESIGN_GENRE.md)）用に、
+`DISCORD_WEBHOOK_{NETFLIX|PRIME}_{DOCUMENTARY|VARIETY|MOVIE_JP|MOVIE_FOREIGN|DRAMA_JP|DRAMA_FOREIGN|OTHER}`
+の最大14個も登録します（例: `DISCORD_WEBHOOK_NETFLIX_MOVIE_JP`）。使わないチャンネルは
+未設定のままでよく、その場合は該当ジャンルを通知しません。
+
+| ジャンル | キー |
+|---|---|
+| 邦画 / 洋画 | `MOVIE_JP` / `MOVIE_FOREIGN` |
+| 国内ドラマ / 海外ドラマ | `DRAMA_JP` / `DRAMA_FOREIGN` |
+| バラエティ / ドキュメンタリー / その他 | `VARIETY` / `DOCUMENTARY` / `OTHER` |
+
 未設定の場合、該当プロバイダの処理はスキップされ、ログにその旨が出力されます
 （Discordへのエラー通知はWebhook自体が無いため送れません）。
 
@@ -71,7 +82,9 @@ curl -X POST \
   -d '{"event_type": "init-read"}'
 ```
 
-実行後、`state/*_active.json` に直近1週間分のIDが登録されていればOKです。
+実行後、`state/*_active.json`（アニメ）と `state/*_genre_active.json`（ジャンル別）に
+直近1週間分のIDが登録されていればOKです。**ジャンル別のWebhookを登録する前後どちらでも、
+本番（`run-notify`）を動かす前に必ず一度実行してください。**
 
 #### 4b. 重複配信通知の導入（一度だけ）
 

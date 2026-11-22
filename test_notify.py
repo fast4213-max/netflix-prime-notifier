@@ -11,6 +11,7 @@ import sys
 import traceback
 from pathlib import Path
 
+import genre_router
 from animephilia_client import fetch_recent_events, resolve_image_url
 from notifier import send_title_embed, send_title_embeds
 
@@ -57,6 +58,26 @@ def main() -> None:
             failed.append(provider_key)
             continue
         print(f"[{provider_key}] 試験通知を送信しました: {title}")
+
+    # ジャンル別チャンネル（アニメ以外）。設定済みのチャンネルへ1件ずつ送る。
+    genre_cfg = config.get("genre")
+    for provider_key in config["providers"] if genre_cfg else []:
+        for channel in genre_cfg["channels"]:
+            env_name = genre_router.webhook_env_name(genre_cfg, provider_key, channel["key"])
+            webhook = os.environ.get(env_name)
+            name = f"{provider_key}/{channel['key']}"
+            if not webhook:
+                print(f"[{name}] 環境変数 {env_name} が未設定のためスキップ")
+                continue
+            try:
+                send_title_embed(
+                    webhook, f"[テスト通知] {channel.get('label', channel['key'])}", None
+                )
+                print(f"[{name}] 試験通知を送信しました")
+            except Exception as exc:  # noqa: BLE001 全チャンネルを試し切るため握る
+                print(f"[{name}] 試験通知の送信に失敗しました: {exc}")
+                traceback.print_exc()
+                failed.append(name)
 
     # 重複配信通知用チャンネル（Netflixリンク付きの見た目を確認する）。
     cross_cfg = config.get("cross")

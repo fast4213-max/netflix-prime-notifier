@@ -12,7 +12,7 @@ Discordの別チャンネルへ通知するBotの設計書。
 | 情報源 | animephilia.net の配信カレンダー（非公開ajax） |
 | 検知範囲 | アニメ版ページは約1か月先までの予定を返すため、配信日が今日（JST）以前のものだけ対象 |
 | 実行間隔 | 1時間毎（cron-job.org → repository_dispatch） |
-| 対象ジャンル | アニメのみ（全ジャンル版は通知が多すぎるため不使用） |
+| 対象ジャンル | アニメ。アニメ以外はジャンル別チャンネルに分けて通知（[DESIGN_GENRE.md](DESIGN_GENRE.md)） |
 | 通知先 | Discord Webhook × 2（Netflix用 / Prime Video用） |
 
 ---

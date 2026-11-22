@@ -1,0 +1,1756 @@
+{
+ "netflix": {
+  "anime_urls": [
+   "https://www.netflix.com/title/80117526",
+   "https://www.netflix.com/title/81975712",
+   "https://www.netflix.com/title/82171389",
+   "https://www.netflix.com/title/81954575",
+   "https://www.netflix.com/title/82193717",
+   "https://www.netflix.com/title/81088875",
+   "https://www.netflix.com/title/83111321",
+   "https://www.netflix.com/title/82942035",
+   "https://www.netflix.com/title/80169285",
+   "https://www.netflix.com/title/82979603",
+   "https://www.netflix.com/title/81678020",
+   "https://www.netflix.com/title/82006733",
+   "https://www.netflix.com/title/82118669",
+   "https://www.netflix.com/title/82172706",
+   "https://www.netflix.com/title/70109893",
+   "https://www.netflix.com/title/70298991",
+   "https://www.netflix.com/title/81021806",
+   "https://www.netflix.com/title/80182163",
+   "https://www.netflix.com/title/80996790",
+   "https://www.netflix.com/title/82941522",
+   "https://www.netflix.com/title/81212809",
+   "https://www.netflix.com/title/81991076"
+  ],
+  "all": [
+   {
+    "title": "A.I.",
+    "start": "2026-11-16",
+    "url": "https://www.netflix.com/title/60020748",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "アメリカ",
+     "SF映画",
+     "ヒューマンドラマ映画",
+     "本が原作の映画"
+    ]
+   },
+   {
+    "title": "悪魔の計略 ～プランB～",
+    "start": "2026-11-16",
+    "url": "https://www.netflix.com/title/83193646",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "韓国",
+     "リアリティ番組"
+    ]
+   },
+   {
+    "title": "オブリビオン",
+    "start": "2026-11-17",
+    "url": "https://www.netflix.com/title/70259170",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "アメリカ",
+     "SF映画",
+     "アクション・アドベンチャー映画"
+    ]
+   },
+   {
+    "title": "ルール 封印された都市伝説",
+    "start": "2026-11-17",
+    "url": "https://www.netflix.com/title/70034861",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "アメリカ",
+     "ホラー"
+    ]
+   },
+   {
+    "title": "世界の果てに、くるま置いてきた",
+    "start": "2026-11-17",
+    "url": "https://www.netflix.com/title/83310811",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "国内"
+    ]
+   },
+   {
+    "title": "世界の果てに、ひろゆき置いてきた",
+    "start": "2026-11-17",
+    "url": "https://www.netflix.com/title/83233175",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "国内",
+     "お笑い・バラエティ番組",
+     "バラエティ番組"
+    ]
+   },
+   {
+    "title": "世界の果てに、東出・ひろゆき置いてきた",
+    "start": "2026-11-17",
+    "url": "https://www.netflix.com/title/83310764",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "国内"
+    ]
+   },
+   {
+    "title": "国境デスロード",
+    "start": "2026-11-17",
+    "url": "https://www.netflix.com/title/83233261",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "国内",
+     "お笑い・バラエティ番組",
+     "バラエティ番組"
+    ]
+   },
+   {
+    "title": "笑えない世界でも",
+    "start": "2026-11-17",
+    "url": "https://www.netflix.com/title/83087557",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "国内",
+     "ヒューマンドラマ映画"
+    ]
+   },
+   {
+    "title": "金星で逢えたら",
+    "start": "2026-11-17",
+    "url": "https://www.netflix.com/title/81648162",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "青春・学園ヒューマンドラマ映画",
+     "アメリカ",
+     "ヒューマンドラマ映画",
+     "ラブロマンス",
+     "本が原作の映画"
+    ]
+   },
+   {
+    "title": "ヴァレンチーナと12の星座",
+    "start": "2026-11-18",
+    "url": "https://www.netflix.com/title/80991539",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "ロマンチックなTVヒューマンドラマ",
+     "TVヒューマンドラマ",
+     "ブラジル",
+     "本が原作のTV番組・ドラマ",
+     "TVコメディ"
+    ]
+   },
+   {
+    "title": "ウィン・ザ・モール",
+    "start": "2026-11-18",
+    "url": "https://www.netflix.com/title/81906729",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "ファミリーで楽しめるTV番組",
+     "アメリカ",
+     "バトル系リアリティ番組",
+     "リアリティ番組"
+    ]
+   },
+   {
+    "title": "ガーディング・スター",
+    "start": "2026-11-18",
+    "url": "https://www.netflix.com/title/81749470",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "アメリカ",
+     "ラブコメ映画",
+     "コメディ映画",
+     "ラブロマンス",
+     "本が原作の映画"
+    ]
+   },
+   {
+    "title": "キャシーのbig C いま私にできること",
+    "start": "2026-11-18",
+    "url": "https://www.netflix.com/title/70180085",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "TVヒューマンドラマ",
+     "アメリカ",
+     "TVコメディ"
+    ]
+   },
+   {
+    "title": "クロール －凶暴領域－",
+    "start": "2026-11-18",
+    "url": "https://www.netflix.com/title/80203186",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "アメリカ",
+     "ホラー"
+    ]
+   },
+   {
+    "title": "ゴードン",
+    "start": "2026-11-18",
+    "url": "https://www.netflix.com/title/81657614",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "政治をテーマにしたTV番組・ドラマ",
+     "TVヒューマンドラマ",
+     "アルゼンチン",
+     "本が原作のTV番組・ドラマ",
+     "犯罪TV番組・ドラマ"
+    ]
+   },
+   {
+    "title": "ペントハウス",
+    "start": "2026-11-18",
+    "url": "https://www.netflix.com/title/70202145",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "アメリカ",
+     "コメディ映画",
+     "アクション・アドベンチャー映画",
+     "強盗事件を描いたアクション・アドベンチャー映画"
+    ]
+   },
+   {
+    "title": "メンズ校",
+    "start": "2026-11-18",
+    "url": "https://www.netflix.com/title/83313330",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "TVヒューマンドラマ",
+     "青春・学園TVドラマ",
+     "国内",
+     "漫画が原作のTVヒューマンドラマ",
+     "ティーン向けTVヒューマンドラマ"
+    ]
+   },
+   {
+    "title": "ロー・オブ・ビースト",
+    "start": "2026-11-18",
+    "url": "https://www.netflix.com/title/81769097",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "TVヒューマンドラマ",
+     "ポーランド",
+     "犯罪TV番組・ドラマ",
+     "TVサスペンス",
+     "実話に基づくTV番組・ドラマ"
+    ]
+   },
+   {
+    "title": "連続ドラマW 鉄の骨",
+    "start": "2026-11-18",
+    "url": "https://www.netflix.com/title/81600240",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "国内",
+     "本が原作のTV番組・ドラマ",
+     "社会派TVヒューマンドラマ",
+     "TVヒューマンドラマ"
+    ]
+   },
+   {
+    "title": "雪女と蟹を食う",
+    "start": "2026-11-18",
+    "url": "https://www.netflix.com/title/83311909",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "国内",
+     "TVサスペンス"
+    ]
+   },
+   {
+    "title": "アルトリスト",
+    "start": "2026-11-19",
+    "url": "https://www.netflix.com/title/81681910",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "ロマンチックなTVヒューマンドラマ",
+     "TVヒューマンドラマ",
+     "アメリカ",
+     "実話に基づくTV番組・ドラマ"
+    ]
+   },
+   {
+    "title": "ナバロンの嵐",
+    "start": "2026-11-19",
+    "url": "https://www.netflix.com/title/516982",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "アメリカ",
+     "軍隊・戦争映画",
+     "本が原作の映画",
+     "アクション・アドベンチャー映画",
+     "スパイ映画"
+    ]
+   },
+   {
+    "title": "王様のレストラン",
+    "start": "2026-11-19",
+    "url": "https://www.netflix.com/title/80195006",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "TVヒューマンドラマ",
+     "国内",
+     "TVコメディ"
+    ]
+   },
+   {
+    "title": "透明な夜に駆ける君と、目に見えない恋をした。",
+    "start": "2026-11-19",
+    "url": "https://www.netflix.com/title/82941522",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "国内",
+     "ライトノベルが原作のアニメ",
+     "本が原作のTV番組・ドラマ",
+     "恋愛アニメ",
+     "TVアニメ"
+    ]
+   },
+   {
+    "title": "TVプリーチャーズ: カリスマ伝道師の栄光と没落",
+    "start": "2026-11-20",
+    "url": "https://www.netflix.com/title/81774139",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "アメリカ",
+     "ドキュメンタリー映画",
+     "伝記ドキュメンタリー",
+     "文化・社会ドキュメンタリー"
+    ]
+   },
+   {
+    "title": "ヴィセンチーナは謝罪する",
+    "start": "2026-11-20",
+    "url": "https://www.netflix.com/title/81724626",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ブラジル",
+     "ヒューマンドラマ映画",
+     "インディーズ映画"
+    ]
+   },
+   {
+    "title": "エンド・オブ・アメリカ",
+    "start": "2026-11-20",
+    "url": "https://www.netflix.com/title/81654845",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "アメリカ",
+     "アクション・アドベンチャー映画"
+    ]
+   },
+   {
+    "title": "プルンギル －青の道－",
+    "start": "2026-11-20",
+    "url": "https://www.netflix.com/title/81941626",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "韓国",
+     "TVアクション・アドベンチャー",
+     "犯罪TV番組・ドラマ",
+     "TVサスペンス"
+    ]
+   },
+   {
+    "title": "プロジェクト・サイレンス",
+    "start": "2026-11-20",
+    "url": "https://www.netflix.com/title/81942318",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "韓国",
+     "SF映画",
+     "アクション・アドベンチャー映画"
+    ]
+   },
+   {
+    "title": "リリスとシンデレラのおとぎの王国",
+    "start": "2026-11-20",
+    "url": "https://www.netflix.com/title/81212809",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ファミリー向け映画",
+     "キッズ・ファミリー映画",
+     "アメリカ",
+     "アニメーション",
+     "コメディ映画"
+    ]
+   },
+   {
+    "title": "聞いてよ、ウチの大ニュース! シーズン2",
+    "start": "2026-11-20",
+    "url": "https://www.netflix.com/title/82643833",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "TVヒューマンドラマ",
+     "インド",
+     "TVコメディ",
+     "ヒンディー語のTV番組・ドラマ"
+    ]
+   },
+   {
+    "title": "U.M.A レイク・プラシッド3",
+    "start": "2026-11-21",
+    "url": "https://www.netflix.com/title/70143991",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "アメリカ",
+     "ホラー"
+    ]
+   },
+   {
+    "title": "桐島です",
+    "start": "2026-11-21",
+    "url": "https://www.netflix.com/title/82742579",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "国内",
+     "ヒューマンドラマ映画",
+     "実話に基づく映画"
+    ]
+   },
+   {
+    "title": "落下の王国 4Kデジタルリマスター",
+    "start": "2026-11-21",
+    "url": "https://www.netflix.com/title/70099619",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "アメリカ",
+     "ヒューマンドラマ映画",
+     "歴史・時代劇"
+    ]
+   },
+   {
+    "title": "はらむひとびと",
+    "start": "2026-11-22",
+    "url": "https://www.netflix.com/title/83201874",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "国内",
+     "ヒューマンドラマ映画",
+     "社会問題に迫るヒューマンドラマ"
+    ]
+   },
+   {
+    "title": "初恋の悪魔",
+    "start": "2026-11-22",
+    "url": "https://www.netflix.com/title/83306350",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "TVヒューマンドラマ",
+     "国内",
+     "TVミステリー",
+     "TVコメディ",
+     "犯罪TV番組・ドラマ"
+    ]
+   }
+  ]
+ },
+ "prime_video": {
+  "anime_urls": [
+   "https://www.amazon.co.jp/gp/video/detail/B0HK8QYP13",
+   "https://www.amazon.co.jp/gp/video/detail/B0HG2GHYBL",
+   "https://www.amazon.co.jp/gp/video/detail/B09VBW6PH1",
+   "https://www.amazon.co.jp/gp/video/detail/B0CVXYVHQ5",
+   "https://www.amazon.co.jp/gp/video/detail/B0F5WJ4F8W",
+   "https://www.amazon.co.jp/gp/video/detail/B0HKF3N3KX",
+   "https://www.amazon.co.jp/gp/video/detail/B0GXFD3F7J",
+   "https://www.amazon.co.jp/gp/video/detail/B01MQWHDQQ",
+   "https://www.amazon.co.jp/gp/video/detail/B0F54N5417",
+   "https://www.amazon.co.jp/gp/video/detail/B0DMVYNRGC",
+   "https://www.amazon.co.jp/gp/video/detail/B0FCMYR667",
+   "https://www.amazon.co.jp/gp/video/detail/B0B8TR5W9P",
+   "https://www.amazon.co.jp/gp/video/detail/B0F4L34X9D",
+   "https://www.amazon.co.jp/gp/video/detail/B0GWWW288P",
+   "https://www.amazon.co.jp/gp/video/detail/B0FMHJ6WCK",
+   "https://www.amazon.co.jp/gp/video/detail/B0G374QB2T",
+   "https://www.amazon.co.jp/gp/video/detail/B0GR652HLS",
+   "https://www.amazon.co.jp/gp/video/detail/B0GV88S3LW",
+   "https://www.amazon.co.jp/gp/video/detail/B0D84F5KXD",
+   "https://www.amazon.co.jp/gp/video/detail/B0GX2Q769V",
+   "https://www.amazon.co.jp/gp/video/detail/B0GW781DN7",
+   "https://www.amazon.co.jp/gp/video/detail/B0GT4HR99K",
+   "https://www.amazon.co.jp/gp/video/detail/B0GPGWWMK7",
+   "https://www.amazon.co.jp/gp/video/detail/B0GWL112F2",
+   "https://www.amazon.co.jp/gp/video/detail/B0HND3GRVZ",
+   "https://www.amazon.co.jp/gp/video/detail/B0HKZC4V3G",
+   "https://www.amazon.co.jp/gp/video/detail/B0HMJT49LT",
+   "https://www.amazon.co.jp/gp/video/detail/B0HQ6Y1422",
+   "https://www.amazon.co.jp/gp/video/detail/B0HM6VQBMM",
+   "https://www.amazon.co.jp/gp/video/detail/B0HKMZHJF4",
+   "https://www.amazon.co.jp/gp/video/detail/B0HP67XPSM",
+   "https://www.amazon.co.jp/gp/video/detail/B0D5DPW59S",
+   "https://www.amazon.co.jp/gp/video/detail/B0D9KQ9WQN",
+   "https://www.amazon.co.jp/gp/video/detail/B0DTV5T2RW",
+   "https://www.amazon.co.jp/gp/video/detail/B0FPBWZHFM",
+   "https://www.amazon.co.jp/gp/video/detail/B0DF4FNR2K",
+   "https://www.amazon.co.jp/gp/video/detail/B0DYTZ2XKR",
+   "https://www.amazon.co.jp/gp/video/detail/B0H1Z2LY4X",
+   "https://www.amazon.co.jp/gp/video/detail/B0BZGLNHZJ",
+   "https://www.amazon.co.jp/gp/video/detail/B0FLDLWNWM",
+   "https://www.amazon.co.jp/gp/video/detail/B0FM82MZM1",
+   "https://www.amazon.co.jp/gp/video/detail/B0DCNR4PJY",
+   "https://www.amazon.co.jp/gp/video/detail/B0GTDPBMZP",
+   "https://www.amazon.co.jp/gp/video/detail/B0GX7TCCXS",
+   "https://www.amazon.co.jp/gp/video/detail/B0H8KPV1NB",
+   "https://www.amazon.co.jp/gp/video/detail/B0CHLB8MKL",
+   "https://www.amazon.co.jp/gp/video/detail/B0HCMNKPVF",
+   "https://www.amazon.co.jp/gp/video/detail/B0HPXGKH11",
+   "https://www.amazon.co.jp/gp/video/detail/B0HPRLX59D",
+   "https://www.amazon.co.jp/gp/video/detail/B0FWZNLBV6",
+   "https://www.amazon.co.jp/gp/video/detail/B0FR3X45J1",
+   "https://www.amazon.co.jp/gp/video/detail/B0HN3HVNKQ",
+   "https://www.amazon.co.jp/gp/video/detail/B0HCGJGWK9",
+   "https://www.amazon.co.jp/gp/video/detail/B0HMYZ8TQF",
+   "https://www.amazon.co.jp/gp/video/detail/B0FGFC5MQ5",
+   "https://www.amazon.co.jp/gp/video/detail/B0FLDM6ZGX",
+   "https://www.amazon.co.jp/gp/video/detail/B0H887X95Z",
+   "https://www.amazon.co.jp/gp/video/detail/B0H895JRQS",
+   "https://www.amazon.co.jp/gp/video/detail/B0H85HBRRC",
+   "https://www.amazon.co.jp/gp/video/detail/B0H85H4BGV",
+   "https://www.amazon.co.jp/gp/video/detail/B0H889LXQF",
+   "https://www.amazon.co.jp/gp/video/detail/B0HKP957JS",
+   "https://www.amazon.co.jp/gp/video/detail/B0GGWD66BX",
+   "https://www.amazon.co.jp/gp/video/detail/B0H876XKPX",
+   "https://www.amazon.co.jp/gp/video/detail/B0GXC16Z8M",
+   "https://www.amazon.co.jp/gp/video/detail/B0H879H373",
+   "https://www.amazon.co.jp/gp/video/detail/B0CKNMS5P5",
+   "https://www.amazon.co.jp/gp/video/detail/B0FB8Z1V5C",
+   "https://www.amazon.co.jp/gp/video/detail/B0DWR336QN",
+   "https://www.amazon.co.jp/gp/video/detail/B0DZTTN875",
+   "https://www.amazon.co.jp/gp/video/detail/B0D3J61J6L",
+   "https://www.amazon.co.jp/gp/video/detail/B0D97XDWJY",
+   "https://www.amazon.co.jp/gp/video/detail/B0H8PXDZD3"
+  ],
+  "all": [
+   {
+    "title": "FOGDOG",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0FWJ1WD3Q",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "Sister",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H3C7HSRY",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "ロマンス",
+     "サスペンス",
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "アンラッキーガール!",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HFMY9JB1",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "イタイケに恋して",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HN2MHLW3",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "エッジ・オブ・バイオレンス (字幕版)",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0GWDDHQPP",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "サスペンス",
+     "西部劇",
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "カラフラブル～ジェンダーレス男子に愛されています。～",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H9Y5XHMW",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "ギルティ～この恋は罪ですか?～",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H128G15T",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "ロマンス",
+     "ドラマ",
+     "サスペンス"
+    ]
+   },
+   {
+    "title": "ケイ×ヤク-あぶない相棒-",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HMJHDN6H",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "サメお",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H4D3W55H",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "アクション",
+     "ファンタジー",
+     "SF"
+    ]
+   },
+   {
+    "title": "チート～詐欺師の皆さん、ご注意ください～",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HLLR9Y6X",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "トラップ",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0D83MKH3G",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "サスペンス"
+    ]
+   },
+   {
+    "title": "めぐる未来",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0CPV849TL",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "サスペンス",
+     "ドラマ",
+     "SF"
+    ]
+   },
+   {
+    "title": "勝利の法廷式",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0BZHWYDWQ",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "ドラマ",
+     "サスペンス"
+    ]
+   },
+   {
+    "title": "卒業クラス",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0CHLB8MKL",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "アニメ",
+     "ドラマ",
+     "ロマンス"
+    ]
+   },
+   {
+    "title": "名探偵コナン 工藤新一への挑戦状",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HNH85ZRY",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "君が死刑になる前に",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0GVBHHZBX",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "サスペンス",
+     "ドラマ",
+     "SF"
+    ]
+   },
+   {
+    "title": "恋がヘタでも生きてます",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H1FD1SPB",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "ロマンス",
+     "ドラマ",
+     "コメディ"
+    ]
+   },
+   {
+    "title": "探偵が早すぎる",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HLWD18VG",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "サスペンス",
+     "コメディ"
+    ]
+   },
+   {
+    "title": "映画 おでかけ子ザメ とかいのおともだち",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HCMNKPVF",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "アニメ"
+    ]
+   },
+   {
+    "title": "梵そよぎ1stEXPO『0rigin』 夜公演",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HPXGKH11",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "アニメ"
+    ]
+   },
+   {
+    "title": "梵そよぎ1stEXPO『0rigin』 昼公演",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HPRLX59D",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "アニメ"
+    ]
+   },
+   {
+    "title": "発狂する現代史 Part3",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0FWZNLBV6",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "アニメ",
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "約束 ～16年目の真実～",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0CV78RDBP",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "サスペンス",
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "豚の王",
+    "start": "2026-11-16",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0FR3X45J1",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "アニメ",
+     "ドラマ",
+     "サスペンス"
+    ]
+   },
+   {
+    "title": "ヴォルコフ 怪物の誕生 (字幕版)",
+    "start": "2026-11-18",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0GXC127R8",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "サスペンス",
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "エド・アズナー 人生は台本なし (字幕版)",
+    "start": "2026-11-18",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HPFZHXH4",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ドキュメンタリー"
+    ]
+   },
+   {
+    "title": "ザ・ダークネス 呪いの継承 (字幕版)",
+    "start": "2026-11-18",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H2HFLKFC",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ホラー",
+     "サスペンス"
+    ]
+   },
+   {
+    "title": "シェルター (字幕/吹替)",
+    "start": "2026-11-18",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HFT56XG9",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "アクション",
+     "サスペンス"
+    ]
+   },
+   {
+    "title": "牡丹亭～花影に散る嘘～",
+    "start": "2026-11-18",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0GHY3Z9SV",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "ロマンス",
+     "ドラマ",
+     "歴史",
+     "サスペンス"
+    ]
+   },
+   {
+    "title": "マッデン",
+    "start": "2026-11-18T17:00:00+09:00",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0G6MTP7NG",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ドラマ",
+     "スポーツ"
+    ]
+   },
+   {
+    "title": "Adelmo",
+    "start": "2026-11-19",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HGZPPVKX",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ドラマ",
+     "ロマンス"
+    ]
+   },
+   {
+    "title": "Bad Faith",
+    "start": "2026-11-19",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0CW6Q2R1V",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ドキュメンタリー"
+    ]
+   },
+   {
+    "title": "Cube Zero",
+    "start": "2026-11-19",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HRD8PKC6",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ホラー",
+     "SF",
+     "サスペンス"
+    ]
+   },
+   {
+    "title": "Hidden Truths",
+    "start": "2026-11-19",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0DR5NQ2VV",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ショートムービー",
+     "ドラマ",
+     "ロマンス"
+    ]
+   },
+   {
+    "title": "Pasolini Stories",
+    "start": "2026-11-19",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H27475L2",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ドキュメンタリー"
+    ]
+   },
+   {
+    "title": "Sea Gypsies",
+    "start": "2026-11-19",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0DGLZC8W3",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ドキュメンタリー",
+     "アクション",
+     "冒険"
+    ]
+   },
+   {
+    "title": "オーシャン",
+    "start": "2026-11-19",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HRFGJL6X",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "サスペンス",
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "ザ・フェニックス",
+    "start": "2026-11-19",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H4QHSKRY",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ドラマ",
+     "ロマンス"
+    ]
+   },
+   {
+    "title": "サスペンデッド",
+    "start": "2026-11-19",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H1R7T5DY",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "コメディ"
+    ]
+   },
+   {
+    "title": "ちっちゃいサムライ 三浦正雄の子供時代",
+    "start": "2026-11-19",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HLVB84W1",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "バービーのくるみ割り人形",
+    "start": "2026-11-19",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HLW43YD8",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "キッズ",
+     "ファンタジー",
+     "冒険"
+    ]
+   },
+   {
+    "title": "バニラ - Vainilla",
+    "start": "2026-11-19",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HFZCGSM6",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ドラマ",
+     "エロティック",
+     "アートシアター"
+    ]
+   },
+   {
+    "title": "ビーカー教授事件",
+    "start": "2026-11-19",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HN3HVNKQ",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "アニメ"
+    ]
+   },
+   {
+    "title": "ラクス・ライラ",
+    "start": "2026-11-19",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HFGHY195",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ドラマ",
+     "ロマンス"
+    ]
+   },
+   {
+    "title": "名残の晩餐",
+    "start": "2026-11-19",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HFGXM5LF",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ロマンス",
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "金谷銀太郎の思惑 猿上家の御家族",
+    "start": "2026-11-19",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HNPW2B2F",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "鏡の国のアリス",
+    "start": "2026-11-19",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HNGSSV3K",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "キッズ",
+     "ファンタジー"
+    ]
+   },
+   {
+    "title": "阿彦哲郎物語 戦争の囚われ人",
+    "start": "2026-11-19",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HQDS45C9",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "ドラマ",
+     "歴史"
+    ]
+   },
+   {
+    "title": "0時限目のシンデレラ",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0FV1FNDXQ",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "ロマンス",
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "YOUR HONOR～許されざる判事～",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0DW3RL5XZ",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "アンダンテ～恋する速度～",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0GT2HVM5N",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "ドラマ",
+     "ロマンス",
+     "コメディ",
+     "青少年向け"
+    ]
+   },
+   {
+    "title": "イモン～禁断の愛～",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0F6W7NGF8",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "歴史",
+     "ドラマ",
+     "アクション",
+     "ロマンス"
+    ]
+   },
+   {
+    "title": "ガウス電子～僕らの社内恋愛マニュアル～",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0FD3HKBCK",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "コメディ",
+     "ロマンス"
+    ]
+   },
+   {
+    "title": "カラフルダイヤモンド～君と僕のドリーム～",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0GF9VMQBB",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "ドキュメンタリー"
+    ]
+   },
+   {
+    "title": "カラフルダイヤモンド～君と僕のドリーム2～",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0GQX6BG7M",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "ドキュメンタリー"
+    ]
+   },
+   {
+    "title": "ザ・スカルキング",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HCGJGWK9",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "アニメ"
+    ]
+   },
+   {
+    "title": "たかほー日和。Season2 ～鷹とごはんと明日の私～",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HPGLY56Y",
+    "region": "domestic",
+    "kind": "tv",
+    "genres": [
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "テプンの花嫁～愛と復讐の羅針盤",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0CC6HSL3J",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "ロマンス",
+     "ドラマ",
+     "サスペンス"
+    ]
+   },
+   {
+    "title": "トッコ リワインド～復讐の毒鼓～",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H94DXP39",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "アクション",
+     "ドラマ",
+     "青少年向け"
+    ]
+   },
+   {
+    "title": "ネイルサロンパリス～恋は指先から～ (字幕版)",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0FY4JMN2C",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "ロマンス",
+     "コメディ",
+     "ドラマ",
+     "ファンタジー"
+    ]
+   },
+   {
+    "title": "パーフェクト・ライアーズ ～華麗なる秘密～",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HKY9XS91",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "マザコン彼氏にご用心! (字幕版)",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0GZY3WD7Z",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ロマンス",
+     "コメディ"
+    ]
+   },
+   {
+    "title": "マジカル・シークレット・ツアー",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HL1NQT4Y",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "ドラマ",
+     "サスペンス",
+     "コメディ"
+    ]
+   },
+   {
+    "title": "ミッシングナイン",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0F9Z4F9T2",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "レビュー王!チャン・ボンギ",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0FVKGDKL7",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "コメディ",
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "劇場版「Fate/stay night [Heaven’s Feel]」I.presage flower",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HMYZ8TQF",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "アニメ",
+     "ファンタジー",
+     "アクション",
+     "ロマンス"
+    ]
+   },
+   {
+    "title": "劇場版「Fate/stay night [Heaven's Feel]」II.lost butterfly",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0FGFC5MQ5",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "アニメ",
+     "ファンタジー",
+     "アクション",
+     "ロマンス"
+    ]
+   },
+   {
+    "title": "劇場版「Fate/stay night [Heaven's Feel]」III.spring song",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0FLDM6ZGX",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "アニメ",
+     "ファンタジー",
+     "アクション",
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "劇場版「空の境界」第一章 俯瞰風景",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H887X95Z",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "アニメ",
+     "サスペンス",
+     "ファンタジー",
+     "ホラー"
+    ]
+   },
+   {
+    "title": "劇場版「空の境界」第二章 殺人考察 (前)",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H895JRQS",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "アニメ",
+     "サスペンス",
+     "ドラマ",
+     "ロマンス"
+    ]
+   },
+   {
+    "title": "劇場版「空の境界」第三章 痛覚残留",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H85HBRRC",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "アニメ",
+     "サスペンス",
+     "ドラマ",
+     "ファンタジー"
+    ]
+   },
+   {
+    "title": "劇場版「空の境界」第四章 伽藍の洞",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H85H4BGV",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "アニメ",
+     "ファンタジー",
+     "ドラマ",
+     "サスペンス"
+    ]
+   },
+   {
+    "title": "劇場版「空の境界」第五章 矛盾螺旋",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H889LXQF",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "アニメ",
+     "サスペンス",
+     "アクション",
+     "ファンタジー"
+    ]
+   },
+   {
+    "title": "劇場版「空の境界」第六章 忘却録音",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HKP957JS",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "アニメ",
+     "サスペンス",
+     "ファンタジー"
+    ]
+   },
+   {
+    "title": "劇場版「空の境界」第七章 殺人考察 (後)",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0GGWD66BX",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "アニメ",
+     "サスペンス",
+     "ドラマ",
+     "ファンタジー"
+    ]
+   },
+   {
+    "title": "劇場版「空の境界」終章",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H876XKPX",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "アニメ",
+     "ファンタジー",
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "劇場版「空の境界」未来福音",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0GXC16Z8M",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "アニメ",
+     "サスペンス",
+     "ドラマ",
+     "ファンタジー"
+    ]
+   },
+   {
+    "title": "劇場版「空の境界」未来福音 extra chorus",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H879H373",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "アニメ",
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "劇場版スポンジ・ボブ 呪われた海賊と大冒険だワワワワワ!",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0G17WZ92F",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "アクション",
+     "コメディ",
+     "キッズ"
+    ]
+   },
+   {
+    "title": "合意",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HPY67GN4",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "君のそばに～Touching You～",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0GJL9VJ5H",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "女性大統領",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HL238Q84",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "コメディ"
+    ]
+   },
+   {
+    "title": "定められし運命",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HNS112K6",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "度華年 The Princess Royal",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0G1BF6M2W",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "ロマンス",
+     "ドラマ",
+     "ファンタジー",
+     "歴史"
+    ]
+   },
+   {
+    "title": "新兵～僕は超 (スーパー) VIP・ソルジャー～",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0F1K6ZGT2",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "コメディ",
+     "軍隊・戦争",
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "流麻溝十五号",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0F5TWNMS7",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ドラマ",
+     "歴史"
+    ]
+   },
+   {
+    "title": "消された暴行動画 真実を追う父の制裁 (字幕/吹替)",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H3V4RPGP",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "サスペンス",
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "王の顔 (字幕版)",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H1P6VQF3",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "歴史",
+     "ドラマ",
+     "ロマンス",
+     "サスペンス"
+    ]
+   },
+   {
+    "title": "社会人～リスタート人生～",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0FWJ64GZV",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "ドラマ",
+     "スポーツ"
+    ]
+   },
+   {
+    "title": "神のクイズ1",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HKDMV3RB",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "素晴らしい遺産～花咲く人生～",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0FGMCR53C",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "ドラマ",
+     "コメディ",
+     "ロマンス"
+    ]
+   },
+   {
+    "title": "舞台「カラフルダイヤモンド～君と僕のドリーム～」チームカラフル版",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0GF7M4J4J",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "アート・エンターテイメント・カルチャー",
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "舞台「カラフルダイヤモンド～君と僕のドリーム～」チームダイヤモンド版",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0GGR1KZVY",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "アート・エンターテイメント・カルチャー",
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "舞台「カラフルダイヤモンド～君と僕のドリーム2～」チームカラフル版",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0GGQQ2M7P",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "アート・エンターテイメント・カルチャー",
+     "ドラマ",
+     "ファンタジー"
+    ]
+   },
+   {
+    "title": "舞台「カラフルダイヤモンド～君と僕のドリーム2～」チームダイヤモンド版",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0GHN7RZPF",
+    "region": "domestic",
+    "kind": "movie",
+    "genres": [
+     "アート・エンターテイメント・カルチャー",
+     "ドラマ",
+     "ファンタジー"
+    ]
+   },
+   {
+    "title": "血も涙もなく～ディア・マイ・シスター～",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0DFXJ5W54",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "馬車馬な私のシンデレラ・ラブストーリー (字幕版)",
+    "start": "2026-11-20",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0H2DCRP84",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ロマンス",
+     "コメディ"
+    ]
+   },
+   {
+    "title": "メラニア:ザ・シリーズ",
+    "start": "2026-11-20T17:00:00+09:00",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HL3RNTTL",
+    "region": "overseas",
+    "kind": "tv",
+    "genres": [
+     "ドキュメンタリー"
+    ]
+   },
+   {
+    "title": "サンタ・ボックス (字幕/吹替)",
+    "start": "2026-11-21",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HF9LWJGD",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ファンタジー",
+     "ドラマ",
+     "キッズ"
+    ]
+   },
+   {
+    "title": "スクール・アローン (字幕/吹替)",
+    "start": "2026-11-21",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HBN1B3SL",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "冒険",
+     "ドラマ",
+     "コメディ"
+    ]
+   },
+   {
+    "title": "ステイク・ランド 戦いの果て (字幕版)",
+    "start": "2026-11-21",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0GVPQHXK4",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ホラー",
+     "アクション",
+     "SF"
+    ]
+   },
+   {
+    "title": "ラスト・ディセント ナティ・パティ洞窟事故 (字幕版)",
+    "start": "2026-11-21",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0GWW2G75Y",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "サスペンス",
+     "ドラマ",
+     "ホラー"
+    ]
+   },
+   {
+    "title": "十二夜",
+    "start": "2026-11-21",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HHFZZD3X",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "コメディ",
+     "ロマンス",
+     "ドラマ"
+    ]
+   },
+   {
+    "title": "28年後... 白骨の神殿",
+    "start": "2026-11-22",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0GDFG3G2N",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ホラー",
+     "SF",
+     "サスペンス"
+    ]
+   },
+   {
+    "title": "ソング・サング・ブルー (字幕/吹替)",
+    "start": "2026-11-22",
+    "url": "https://www.amazon.co.jp/gp/video/detail/B0HN2XPX79",
+    "region": "overseas",
+    "kind": "movie",
+    "genres": [
+     "ドラマ",
+     "ロマンス",
+     "アート・エンターテイメント・カルチャー"
+    ]
+   }
+  ]
+ }
+}
