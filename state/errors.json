@@ -1,1 +1,12 @@
-{}
+{
+  "[netflix] Animephiliaからの新着取得に失敗しました": {
+    "last_notified": null,
+    "last_seen": "2026-11-23T14:02:38.002678+00:00",
+    "streak": 1
+  },
+  "[prime_video] Animephiliaからの新着取得に失敗しました": {
+    "last_notified": null,
+    "last_seen": "2026-11-23T14:02:38.002678+00:00",
+    "streak": 1
+  }
+}
